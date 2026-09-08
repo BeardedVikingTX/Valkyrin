@@ -54,7 +54,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-md-6">
             <div class="vk-hud-card h-100 p-3 text-center">
                 <a href="https://valkyrin.beardedviking.org" target="_blank">
-                    <img src="assets/img/media/Gemini_Homepage.png" alt="Gemini Valkyrin Interface" class="img-fluid vk-float-img mb-3">
+                    <img src="assets/img/Gemini_home1.png" alt="Gemini Valkyrin Interface" class="img-fluid vk-float-img mb-3">
                 </a>
                 <h3 class="h4 text-info">GEMINI</h3>
                 <span class="badge bg-primary mb-2">Platform: VALKYRIN</span>
@@ -70,7 +70,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-md-6">
             <div class="vk-hud-card h-100 p-3 text-center">
                 <a href="https://ravenwarp.beardedviking.org" target="_blank">
-                    <img src="assets/img/media/Claude_Homepage.png" alt="Claude RavenWarp Interface" class="img-fluid vk-float-img mb-3">
+                    <img src="assets/img/Claude_home1.png" alt="Claude RavenWarp Interface" class="img-fluid vk-float-img mb-3">
                 </a>
                 <h3 class="h4 text-light">CLAUDE</h3>
                 <span class="badge bg-secondary mb-2">Platform: RAVENWARP</span>
@@ -86,7 +86,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-md-6">
             <div class="vk-hud-card h-100 p-3 text-center">
                 <a href="https://nexora.beardedviking.org" target="_blank">
-                    <img src="assets/img/media/ChatGPT_Homepage.png" alt="ChatGPT Nexora Interface" class="img-fluid vk-float-img mb-3">
+                    <img src="assets/img/ChatGPT_home1.png" alt="ChatGPT Nexora Interface" class="img-fluid vk-float-img mb-3">
                 </a>
                 <h3 class="h4 text-success">CHATGPT</h3>
                 <span class="badge bg-success mb-2">Platform: NEXORA</span>
@@ -102,7 +102,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-md-6">
             <div class="vk-hud-card h-100 p-3 text-center">
                 <a href="https://nexusvalhalla.beardedviking.org" target="_blank">
-                    <img src="assets/img/media/DeepSeek_Homepage.png" alt="DeepSeek NexusValhalla Interface" class="img-fluid vk-float-img mb-3">
+                    <img src="assets/img/DeepSeek_Home1.png" alt="DeepSeek NexusValhalla Interface" class="img-fluid vk-float-img mb-3">
                 </a>
                 <h3 class="h4 text-danger">DEEPSEEK</h3>
                 <span class="badge bg-danger mb-2">Platform: NEXUS VALHALLA</span>
@@ -118,7 +118,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="col-lg-4 col-md-6 mx-auto">
             <div class="vk-hud-card h-100 p-3 text-center">
                 <a href="https://sagasphere.beardedviking.org" target="_blank">
-                    <img src="assets/img/media/CoPilot_Homepage.png" alt="CoPilot SagaSphere Interface" class="img-fluid vk-float-img mb-3">
+                    <img src="assets/img/CoPilot_home1.png" alt="CoPilot SagaSphere Interface" class="img-fluid vk-float-img mb-3">
                 </a>
                 <h3 class="h4 text-warning">COPILOT</h3>
                 <span class="badge bg-warning text-dark mb-2">Platform: SAGASPHERE</span>
