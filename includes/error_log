@@ -1,0 +1,4 @@
+[08-Sep-2026 00:13:19 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 00:13:19 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/css/main.css in /home/beardedviking/valkyrin.beardedviking.org/includes/header.php on line 39
+[08-Sep-2026 00:18:25 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/css/main.css in /home/beardedviking/valkyrin.beardedviking.org/includes/header.php on line 39
+[08-Sep-2026 00:18:25 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
