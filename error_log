@@ -33,3 +33,16 @@
 [08-Sep-2026 10:57:23 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
 [08-Sep-2026 12:02:10 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
 [08-Sep-2026 12:28:13 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 14:33:06 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:25:58 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:28:04 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:28:13 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:28:14 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:36:26 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:41:31 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 15:42:42 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/../config/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/about.php on line 28
+[08-Sep-2026 15:42:42 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/../config/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/about.php:28
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/about.php on line 28
+[08-Sep-2026 15:44:29 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64

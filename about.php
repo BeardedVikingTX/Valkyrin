@@ -23,40 +23,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         if (!$voterEmail || empty($voterName) || !in_array($selectedAi, $validLlms)) {
             $voteError = "Invalid telemetry inputs. Please complete all required voter fields.";
         } else {
-            // STEP 1: Database Persistence Logic (PDO Prepared Statement)
+            // STEP 1: Database Persistence Logic
             try {
-                /*
-                // Uncomment and set your active PDO connection ($pdo)
-                $stmt = $pdo->prepare("INSERT INTO llm_votes (voter_name, voter_email, selected_llm, created_at) VALUES (:name, :email, :llm, NOW())");
-                $stmt->execute([':name' => $voterName, ':email' => $voterEmail, ':llm' => $selectedAi]);
-                */
-
-                // STEP 2: Email Transmission Protocol (Voter Confirmation + Lead Engineer Alert)
-                $leadEngineerEmail = "info@beardedviking.org";
-                $subjectLead = "VALKYRIN :: New LLM Vote Cast by {$voterName}";
-                $messageLead = "SYSTEM ALERT: A new vote has been logged in the Valkyrin Multi-LLM Race.\n\n"
-                             . "Voter Name: {$voterName}\n"
-                             . "Voter Email: {$voterEmail}\n"
-                             . "Selected Node: {$selectedAi}\n"
-                             . "Timestamp: " . date('Y-m-d H:i:s') . "\n";
-
-                $subjectVoter = "VALKYRIN TELEMETRY :: Vote Confirmation";
-                $messageVoter = "Greetings {$voterName},\n\n"
-                              . "Your vote for '{$selectedAi}' has been permanently recorded in the Valkyrin Multi-LLM Benchmark DB.\n"
-                              . "Thank you for participating in this 6-month digital social experiment.\n\n"
-                              . "Skál,\nBearded Viking\nhttps://beardedviking.org";
-
-                $headers = "From: Valkyrin Node <no-reply@beardedviking.org>\r\n"
-                         . "Reply-To: info@beardedviking.org\r\n"
-                         . "X-Mailer: PHP/" . phpversion();
-
-                // Dispatch Emails
-                @mail($leadEngineerEmail, $subjectLead, $messageLead, $headers);
-                @mail($voterEmail, $subjectVoter, $messageVoter, $headers);
-
+                require_once __DIR__ . '/config/database.php';
+                $pdo = get_db_connection();
+            
+                $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+                $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
+            
+                $stmt = $pdo->prepare("
+                    INSERT INTO llm_votes (voter_name, voter_email, selected_llm, ip_address, user_agent) 
+                    VALUES (:name, :email, :llm, :ip, :ua)
+                ");
+            
+                $stmt->execute([
+                    ':name'  => $voterName,
+                    ':email' => $voterEmail,
+                    ':llm'   => $selectedAi,
+                    ':ip'    => $ipAddress,
+                    ':ua'    => $userAgent
+                ]);
+            
                 $voteSuccess = true;
             } catch (Exception $e) {
-                $voteError = "Database operational failure during vote insertion: " . $e->getMessage();
+                $voteError = "Database operational failure during vote insertion. Telemetry offline.";
+                error_log("Vote Insertion Failure: " . $e->getMessage());
             }
         }
     }
@@ -119,16 +110,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         <!-- Floating Competitor Visual Nodes -->
         <div class="row g-4 mt-4">
             <div class="col-md-4 text-center">
-                <img src="assets/img/media/Gemini_Homepage.png" alt="Gemini Engine Preview" class="img-fluid vk-float-img mb-2">
+                <img src="assets/img/Gemini_home1.png" alt="Gemini Engine Preview" class="img-fluid vk-float-img mb-2">
                 <h4 class="h6 text-info">GEMINI NODE</h4>
             </div>
             <div class="col-md-4 text-center">
-                <img src="assets/img/media/Claude_Homepage.png" alt="Claude Engine Preview" class="img-fluid vk-float-img mb-2">
+                <img src="assets/img/Claude_home1.png" alt="Claude Engine Preview" class="img-fluid vk-float-img mb-2">
                 <h4 class="h6 text-light">CLAUDE NODE</h4>
             </div>
             <div class="col-md-4 text-center">
-                <img src="assets/img/media/ChatGPT_Homepage.png" alt="ChatGPT Engine Preview" class="img-fluid vk-float-img mb-2">
+                <img src="assets/img/ChatGPT_home1.png" alt="ChatGPT Engine Preview" class="img-fluid vk-float-img mb-2">
                 <h4 class="h6 text-success">CHATGPT NODE</h4>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="assets/img/CoPilot_home1.png" alt="CoPilot Engine Preview" class="img-fluid vk-float-img mb-2">
+                <h4 class="h6 text-primary">COPILOT NODE</h4>
+            </div>
+            <div class="col-md-4 text-center">
+                <img src="assets/img/DeepSeek_Home1.png" alt="DeepSeek Engine Preview" class="img-fluid vk-float-img mb-2">
+                <h4 class="h6 text-danger">DEEPSEEK NODE</h4>
             </div>
         </div>
     </div>
