@@ -46,3 +46,6 @@ Stack trace:
 #0 {main}
   thrown in /home/beardedviking/valkyrin.beardedviking.org/about.php on line 28
 [08-Sep-2026 15:44:29 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 17:44:43 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 18:03:20 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
+[08-Sep-2026 18:05:04 UTC] PHP Warning:  filemtime(): stat failed for /home/beardedviking/valkyrin.beardedviking.org/includes/../assets/js/functions.js in /home/beardedviking/valkyrin.beardedviking.org/includes/footer.php on line 64
