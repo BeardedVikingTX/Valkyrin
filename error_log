@@ -1,0 +1,25 @@
+[09-Sep-2026 20:13:51 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/connections_action.php on line 19
+[09-Sep-2026 20:13:51 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/connections_action.php:19
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/connections_action.php on line 19
+[09-Sep-2026 21:49:41 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 14
+[09-Sep-2026 21:49:41 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 14
+[09-Sep-2026 22:19:52 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.orgincludes/header.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 14
+[09-Sep-2026 22:19:52 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.orgincludes/header.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php:14
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 14
+[09-Sep-2026 22:20:13 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.orgincludes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 351
+[09-Sep-2026 22:20:13 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.orgincludes/footer.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php:351
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 351
+[09-Sep-2026 22:20:32 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.orgincludes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 331
+[09-Sep-2026 22:20:32 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.orgincludes/footer.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php:331
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 331

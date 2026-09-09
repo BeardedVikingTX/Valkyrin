@@ -23,5 +23,32 @@ if (!defined('VALKYRIN_EXEC')) {
     <script src="/assets/vendors/Canvas-Confetti/confetti.browser.min.js"></script>
     <script src="/assets/vendors/ChartJS/chart.umd.js"></script>
     <script src="/assets/js/main.js"></script>
+    <script>
+        // Browser Push Notification Integration
+        if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            // Request permission on first user interaction
+            document.addEventListener('click', function askPermission() {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log('VALKYRIN Push Notifications Authorized.');
+                    }
+                });
+                document.removeEventListener('click', askPermission);
+            }, { once: true });
+        }
+        
+        // Function to trigger a browser push popup dynamically
+        function triggerPushNotification(title, body, url = '/notifications.php') {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notif = new Notification(title, {
+                    body: body,
+                    icon: '/assets/images/logo.png' // Replace with your logo path
+                });
+                notif.onclick = function() {
+                    window.location.href = url;
+                };
+            }
+        }
+    </script>
 </body>
 </html>
