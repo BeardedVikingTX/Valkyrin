@@ -1,195 +1,74 @@
-/* ==========================================================================
-   VALKYRIN :: Sci-Fi / Cyberpunk Futuristic Theme Engine
-   ========================================================================== */
+/* VALKYRIN Design Framework v2.0 */
 
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@font-face {
+    font-family: 'Cinzel';
+    src: url('../vendors/GoogleFonts/Cinzel-VariableFont_wght.ttf') format('truetype');
+    font-display: swap;
+}
 
 :root {
-  --vk-bg-primary: #050811;
-  --vk-bg-secondary: #0a0f24;
-  --vk-bg-card: rgba(13, 22, 48, 0.75);
-  --vk-neon-cyan: #00f3ff;
-  --vk-neon-blue: #0066ff;
-  --vk-neon-purple: #8a2be2;
-  --vk-neon-gold: #ffb700;
-  --vk-text-primary: #e0f7fc;
-  --vk-text-muted: #82a0bc;
-  --vk-border-glow: rgba(0, 243, 255, 0.3);
-  --vk-font-header: 'Orbitron', sans-serif;
-  --vk-font-body: 'Rajdhani', sans-serif;
-  --vk-font-code: 'Share Tech Mono', monospace;
+    --vk-bg: #07090e;
+    --vk-surface: #0f141d;
+    --vk-surface-border: #1e293b;
+    --vk-primary: #00f2fe;
+    --vk-secondary: #4facfe;
+    --vk-accent: #ff2a6d;
+    --vk-text-main: #f1f5f9;
+    --vk-text-muted: #94a3b8;
+    --vk-font-title: 'Cinzel', serif;
 }
 
-body.valkyrin-telemetry-body {
-  background-color: var(--vk-bg-primary);
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.05) 0%, transparent 40%),
-    radial-gradient(circle at 85% 85%, rgba(138, 43, 226, 0.05) 0%, transparent 40%),
-    linear-gradient(rgba(10, 15, 36, 0.85) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(10, 15, 36, 0.85) 1px, transparent 1px);
-  background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
-  color: var(--vk-text-primary);
-  font-family: var(--vk-font-body);
-  font-size: 1.1rem;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+body {
+    background-color: var(--vk-bg);
+    color: var(--vk-text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
-/* --- Headers & Typography --- */
-h1, h2, h3, h4, h5, h6, .vk-brand-text {
-  font-family: var(--vk-font-header);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+/* Typography Helpers */
+.font-cinzel { font-family: var(--vk-font-title); }
+.text-accent { color: var(--vk-accent) !important; }
+.text-muted-custom { color: var(--vk-text-muted); }
+
+.text-gradient {
+    background: linear-gradient(135deg, var(--vk-primary), var(--vk-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
-.vk-glow-title {
-  color: #fff;
-  text-shadow: 0 0 10px var(--vk-neon-cyan), 0 0 20px var(--vk-neon-cyan), 0 0 40px var(--vk-neon-blue);
-  animation: pulseGlow 3s infinite alternate;
-}
-
-@keyframes pulseGlow {
-  0% { text-shadow: 0 0 10px var(--vk-neon-cyan), 0 0 20px var(--vk-neon-cyan); }
-  100% { text-shadow: 0 0 15px var(--vk-neon-cyan), 0 0 30px var(--vk-neon-purple), 0 0 50px var(--vk-neon-blue); }
-}
-
-/* --- Navbar Styling --- */
+/* Custom Component Shells */
 .vk-navbar {
-  background: rgba(5, 8, 17, 0.9) !important;
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--vk-border-glow);
-  box-shadow: 0 4px 20px rgba(0, 243, 255, 0.15);
+    background-color: rgba(15, 20, 29, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--vk-surface-border);
 }
 
-.vk-brand-icon {
-  color: var(--vk-neon-cyan);
-  font-size: 1.6rem;
-  filter: drop-shadow(0 0 8px var(--vk-neon-cyan));
+.vk-card {
+    background: var(--vk-surface);
+    border: 1px solid var(--vk-surface-border);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
-.vk-status-badge {
-  font-family: var(--vk-font-code);
-  font-size: 0.75rem;
-  background: rgba(0, 243, 255, 0.1);
-  border: 1px solid var(--vk-neon-cyan);
-  color: var(--vk-neon-cyan);
-  padding: 2px 8px;
-  border-radius: 4px;
+.vk-card:hover {
+    border-color: rgba(0, 242, 254, 0.4);
+    transform: translateY(-2px);
 }
 
-.vk-pulse-dot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  background-color: var(--vk-neon-cyan);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--vk-neon-cyan);
-  animation: blinkDot 1.2s infinite;
-}
-
-@keyframes blinkDot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+.vk-footer {
+    background-color: var(--vk-surface);
+    border-top: 1px solid var(--vk-surface-border);
+    margin-top: auto;
 }
 
 .vk-nav-link {
-  font-family: var(--vk-font-header);
-  font-size: 0.9rem;
-  color: var(--vk-text-muted) !important;
-  transition: all 0.3s ease;
+    color: var(--vk-text-muted);
+    font-weight: 500;
+    transition: color 0.2s ease;
 }
 
 .vk-nav-link:hover, .vk-nav-link.active {
-  color: var(--vk-neon-cyan) !important;
-  text-shadow: 0 0 8px var(--vk-neon-cyan);
-}
-
-/* --- Interactive Cards & HUD Containers --- */
-.vk-hud-card {
-  background: var(--vk-bg-card);
-  border: 1px solid var(--vk-border-glow);
-  border-radius: 8px;
-  backdrop-filter: blur(8px);
-  box-shadow: inset 0 0 15px rgba(0, 243, 255, 0.05), 0 8px 32px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-.vk-hud-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--vk-neon-cyan);
-  box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.1), 0 12px 40px rgba(0, 243, 255, 0.25);
-}
-
-/* Floating Image Hover Engine */
-.vk-float-img {
-  border-radius: 8px;
-  border: 1px solid var(--vk-neon-cyan);
-  box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
-  transition: all 0.4s ease-in-out;
-  animation: floatEffect 4s ease-in-out infinite;
-}
-
-.vk-float-img:hover {
-  transform: scale(1.03) translateY(-8px);
-  box-shadow: 0 0 30px var(--vk-neon-cyan), 0 0 50px var(--vk-neon-purple);
-}
-
-@keyframes floatEffect {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-/* --- Buttons --- */
-.vk-btn-glow {
-  background: linear-gradient(135deg, var(--vk-neon-cyan), var(--vk-neon-blue));
-  color: #000 !important;
-  font-family: var(--vk-font-header);
-  font-weight: 700;
-  border: none;
-  box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
-  transition: all 0.3s ease;
-}
-
-.vk-btn-glow:hover {
-  box-shadow: 0 0 25px var(--vk-neon-cyan), 0 0 35px var(--vk-neon-blue);
-  transform: scale(1.05);
-}
-
-.vk-btn-outline {
-  border: 1px solid var(--vk-neon-cyan);
-  color: var(--vk-neon-cyan) !important;
-  font-family: var(--vk-font-header);
-  background: transparent;
-  transition: all 0.3s ease;
-}
-
-.vk-btn-outline:hover {
-  background: rgba(0, 243, 255, 0.15);
-  box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
-}
-
-/* --- Footer Module --- */
-.vk-footer {
-  background: rgba(5, 8, 17, 0.95);
-  border-top: 1px solid var(--vk-border-glow);
-  font-family: var(--vk-font-code);
-  font-size: 0.85rem;
-}
-
-.vk-telemetry-box {
-  background: rgba(10, 15, 36, 0.8);
-  border: 1px solid rgba(0, 243, 255, 0.2);
-}
-
-.vk-footer-link {
-  color: var(--vk-text-muted);
-  text-decoration: none;
-  transition: color 0.3s;
-}
-
-.vk-footer-link:hover {
-  color: var(--vk-neon-cyan);
+    color: var(--vk-primary);
 }

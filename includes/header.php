@@ -1,51 +1,65 @@
 <?php
-/**
- * VALKYRIN :: Core Header Assembly
- */
-
-// Load security session & cookie management first
 require_once __DIR__ . '/cookies.php';
-
-// Hardened Security Headers
-header("X-Frame-Options: SAMEORIGIN");
-header("X-Content-Type-Options: nosniff");
-header("X-XSS-Protection: 1; mode=block");
-header("Referrer-Policy: strict-origin-when-cross-origin");
-
-// Page Title Dynamic Handler
-$pageTitle = isset($pageTitle) ? htmlspecialchars($pageTitle) . " | VALKYRIN" : "VALKYRIN :: Next-Gen Secure Social Node";
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="csrf-token" content="<?= $_SESSION['csrf_token']; ?>">
-    <title><?= $pageTitle; ?></title>
+    <title><?= htmlspecialchars($pageTitle ?? APP_NAME . ' | Next-Gen Social Platform'); ?></title>
 
-    <!-- Google Fonts: Futuristic Sci-Fi Typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Local Vendor Styles -->
+    <link rel="stylesheet" href="/assets/vendors/Bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/vendors/FontAwesome/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/main.css">
 
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <!-- Custom Self-Hosted Font Definitions -->
+    <style>
+        @font-face {
+            font-family: 'Cinzel';
+            src: url('/assets/vendors/GoogleFonts/Cinzel-VariableFont_wght.ttf') format('truetype');
+            font-display: swap;
+        }
 
-    <!-- Font-Awesome Pro / Free CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        :root {
+            --valkyrin-bg: #0a0d14;
+            --valkyrin-surface: #121824;
+            --valkyrin-primary: #00f2fe;
+            --valkyrin-secondary: #4facfe;
+            --valkyrin-accent: #ff2a6d;
+            --valkyrin-text: #e0e6ed;
+            --valkyrin-font-title: 'Cinzel', serif;
+        }
 
-    <!-- Valkyrin Custom Sci-Fi Theme CSS -->
-    <link rel="stylesheet" href="/assets/css/main.css?v=<?= filemtime(__DIR__ . '/../assets/css/main.css') ?? time(); ?>">
+        body {
+            background-color: var(--valkyrin-bg);
+            color: var(--valkyrin-text);
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .font-cinzel {
+            font-family: var(--valkyrin-font-title);
+        }
+
+        .text-accent {
+            color: var(--valkyrin-accent);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--valkyrin-primary), var(--valkyrin-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .valkyrin-card {
+            background: var(--valkyrin-surface);
+            border: 1px solid rgba(0, 242, 254, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+    </style>
 </head>
-<body class="valkyrin-telemetry-body">
-
-    <!-- Dynamic Navigation Inclusion -->
-    <?php 
-    if (file_exists(__DIR__ . '/nav.php')) {
-        include_once __DIR__ . '/nav.php';
-    } 
-    ?>
-
-    <!-- Main Viewport Node -->
-    <main class="valkyrin-viewport container-fluid py-4">
+<body>

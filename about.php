@@ -1,198 +1,272 @@
 <?php
-/**
- * VALKYRIN :: Architectural Dossier & Multi-LLM Benchmark Manifesto
- */
-$pageTitle = "VALKYRIN :: Operational Dossier & AI Benchmark Manifesto";
+define('VALKYRIN_EXEC', true);
+
+$pageTitle = "VALKYRIN | Mission, AI Race Metrics & Live Telemetry";
+$pageDesc = "Complete architectural analysis of the AI Code-A-Thon, updated model rankings (Gemini, Claude, Copilot, ChatGPT, DeepSeek), and live MySQL database telemetry.";
+
 require_once __DIR__ . '/includes/header.php';
-
-// Processing Voting Form Submissions
-$voteSuccess = false;
-$voteError = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'cast_vote') {
-    // Validate CSRF Token
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $voteError = "Security token mismatch. Telemetry signal rejected.";
-    } else {
-        $voterEmail = filter_var(trim($_POST['voter_email'] ?? ''), FILTER_VALIDATE_EMAIL);
-        $voterName  = htmlspecialchars(trim($_POST['voter_name'] ?? ''));
-        $selectedAi = htmlspecialchars(trim($_POST['selected_llm'] ?? ''));
-
-        $validLlms = ['Gemini', 'Claude', 'ChatGPT', 'DeepSeek', 'CoPilot'];
-
-        if (!$voterEmail || empty($voterName) || !in_array($selectedAi, $validLlms)) {
-            $voteError = "Invalid telemetry inputs. Please complete all required voter fields.";
-        } else {
-            // STEP 1: Database Persistence Logic
-            try {
-                require_once __DIR__ . '/config/database.php';
-                $pdo = get_db_connection();
-            
-                $ipAddress = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
-                $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? 'Unknown';
-            
-                $stmt = $pdo->prepare("
-                    INSERT INTO llm_votes (voter_name, voter_email, selected_llm, ip_address, user_agent) 
-                    VALUES (:name, :email, :llm, :ip, :ua)
-                ");
-            
-                $stmt->execute([
-                    ':name'  => $voterName,
-                    ':email' => $voterEmail,
-                    ':llm'   => $selectedAi,
-                    ':ip'    => $ipAddress,
-                    ':ua'    => $userAgent
-                ]);
-            
-                $voteSuccess = true;
-            } catch (Exception $e) {
-                $voteError = "Database operational failure during vote insertion. Telemetry offline.";
-                error_log("Vote Insertion Failure: " . $e->getMessage());
-            }
-        }
-    }
-}
+require_once __DIR__ . '/includes/nav.php';
 ?>
 
-<!-- Dossier Hero Header -->
-<div class="row mb-5 align-items-center">
-    <div class="col-lg-10 mx-auto text-center">
-        <span class="badge vk-status-badge px-3 py-2 fs-6 mb-3">
-            <i class="fa-solid fa-book-bookmark me-2"></i>THE ARCHITECTURAL MANIFESTO
-        </span>
-        <h1 class="display-4 fw-bold vk-glow-title mb-3">BEHIND THE SHIELD OF VALKYRIN</h1>
-        <p class="lead text-info font-monospace">
-            An Academic Analysis of Resilient Architecture, Heritage, and Machine-Learning Benchmarking
+<!-- Page Header Hero -->
+<header class="py-5 bg-opacity-10 border-bottom border-secondary">
+    <div class="container text-center">
+        <div class="badge bg-danger text-light px-3 py-2 rounded-pill mb-3">
+            <i class="fa-solid fa-microchip me-2"></i>THE ULTIMATE AI CODE-A-THON: PART 5
+        </div>
+        <h1 class="display-4 font-cinzel fw-bold mb-3">
+            ARCHITECTURAL <span class="text-gradient">MANIFESTO</span>
+        </h1>
+        <p class="lead text-muted-custom mx-auto mb-0" style="max-width: 800px;">
+            A detailed analysis of the VALKYRIN framework, real-time database telemetry, Near-ZK privacy vectors, and comprehensive rankings across 5 major AI models.
         </p>
     </div>
-</div>
+</header>
 
-<!-- Section 1: The Heritage & Operative Dossier -->
-<section class="mb-5">
-    <div class="vk-hud-card p-4 p-md-5">
-        <div class="row align-items-center">
-            <div class="col-lg-8">
-                <h2 class="text-warning mb-3"><i class="fa-solid fa-shield-halved me-2"></i>OPERATIVE DOSSIER: THE BEARDED VIKING</h2>
-                <p>
-                    Every enduring system is forged over scarred, tested terrain. The Bearded Viking identity stems from an Irish-Viking ancestral lineage, blending raw Nordic resilience with modern cybernetic engineering. Having traversed life's crucible through adversity, grief, and rigorous self-reliance, the governing philosophy behind every project hosted on <strong>beardedviking.org</strong> is rooted in absolute durability and unyielding conviction.
-                </p>
-                <p>
-                    Rather than treating software development as a sterile exercise in writing syntax, the operational objective is the construction of digital strongholds. Valkyrin represents the physical realization of this ethos: an interconnected, zero-trust social ecosystem designed to withstand external cybernetic threats while honoring the time-tested bonds of community, privacy, and technical mastery.
-                </p>
-            </div>
-            <div class="col-lg-4 text-center mt-4 mt-lg-0">
-                <div class="p-3 border border-info rounded bg-dark shadow-lg">
-                    <i class="fa-solid fa-user-ninja fa-5x text-info mb-3"></i>
-                    <h3 class="h5 text-uppercase">Operative Profile</h3>
-                    <ul class="list-unstyled text-start small font-monospace mb-0">
-                        <li><strong>Ancestral Telemetry:</strong> Irish Viking</li>
-                        <li><strong>Resilience Rating:</strong> Unbreakable</li>
-                        <li><strong>Core Domain:</strong> beardedviking.org</li>
-                        <li><strong>Primary Stack:</strong> PHP, JS, MySQL, CSS3</li>
-                    </ul>
+<main class="py-5">
+    <div class="container">
+        
+        <!-- Section 1: Context & Standings -->
+        <article class="mb-5">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-7">
+                    <h2 class="font-cinzel h3 text-gradient mb-3">The Genesis & Rules of the Challenge</h2>
+                    <p class="text-muted-custom">
+                        The <strong>Ultimate AI Code-A-Thon Challenge</strong> was created by Chief Systems Architect <strong>Bearded Viking</strong> to push top artificial intelligence models past basic code snippets into real-world production engineering. Unlike traditional benchmarks, this challenge requires full-stack execution: designing dynamic UI/UX layouts, constructing database schema, ensuring path stability, and maintaining absolute operational security on self-hosted infrastructure.
+                    </p>
+                    <p class="text-muted-custom">
+                        The evaluation criteria reward models that build modular PHP/MySQL architectures while penalizing phantom pathing, route loops, and weak credential handling. As privacy threats escalate, the platform enforces <strong>Near-Zero Knowledge (Near-ZK)</strong> telemetry hashing across all incoming requests.
+                    </p>
+                </div>
+                <div class="col-lg-5">
+                    <div class="vk-card p-4 text-center">
+                        <i class="fa-solid fa-trophy text-accent display-3 mb-3"></i>
+                        <h4 class="font-cinzel mb-2">The AI Race Standings</h4>
+                        <p class="small text-muted-custom mb-3">Evaluated on UI/UX, Logic, & System Reliability</p>
+                        <div class="list-group list-group-flush text-start">
+                            <div class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-crown text-warning me-2"></i>Gemini AI</span>
+                                <span class="badge bg-success">1st Place / Leader</span>
+                            </div>
+                            <div class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-bolt text-info me-2"></i>Claude</span>
+                                <span class="badge bg-info text-dark">2nd Place / Challenger</span>
+                            </div>
+                            <div class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-code text-primary me-2"></i>Copilot</span>
+                                <span class="badge bg-primary">3rd Place / Solid</span>
+                            </div>
+                            <div class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
+                                <span><i class="fa-solid fa-comments text-secondary me-2"></i>ChatGPT</span>
+                                <span class="badge bg-secondary">4th Place (5.0 Score)</span>
+                            </div>
+                            <div class="list-group-item bg-transparent text-light border-secondary d-flex justify-content-between align-items-center">
+                                <span class="text-muted"><i class="fa-solid fa-skull text-danger me-2"></i>DeepSeek</span>
+                                <span class="badge bg-danger">Disqualified</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
-</section>
+        </article>
 
-<!-- Section 2: The Multi-LLM Scientific Methodology -->
-<section class="mb-5">
-    <div class="vk-hud-card p-4 p-md-5">
-        <h2 class="text-info mb-3"><i class="fa-solid fa-vials me-2"></i>THE SCIENTIFIC EXPERIMENT & BENCHMARK METHODOLOGY</h2>
-        <p>
-            The contemporary landscape of Artificial Intelligence is saturated with marketing assertions regarding model capability, logic depth, and full-stack software synthesis. To cut through speculative rhetoric, we initiated a rigorous, empirical 6-month experiment. Five premiere Large Language Model architectures—Google Gemini, Claude, ChatGPT, DeepSeek, and CoPilot—were tasked with independently engineering, deploying, and maintaining a high-performance, fully encrypted social network in real-time under identical hosting constraints on shared server infrastructure.
-        </p>
-        <p>
-            Each LLM must satisfy identical functional parameters: implementing client-side/server-side AES-256 encryption, managing asynchronous AJAX updates, maintaining state integrity, constructing modular CSS components, and securing application vectors against OWASP Top 10 vulnerabilities. The final objective is evaluating which AI companion acts as the ultimate developer-tier collaborator, bridging structural accuracy with creative design execution.
-        </p>
+        <!-- Section 2: Real-Time Dynamic Database Telemetry -->
+        <section class="mb-5">
+            <div class="vk-card p-4 p-md-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-5 mb-4 mb-lg-0">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="font-cinzel text-accent mb-0">Live Database Telemetry</h3>
+                            <span class="badge bg-success border border-light" id="liveIndicator">
+                                <i class="fa-solid fa-signal me-1"></i>LIVE FEED
+                            </span>
+                        </div>
+                        <p class="text-muted-custom">
+                            This tracker queries the MySQL <code>telemetry_logs</code> table via an asynchronous backend API every 3 seconds. Incoming traffic is classified dynamically into security buckets while raw IPs are obscured using dynamic SHA-256 salted hashing.
+                        </p>
+                        
+                        <!-- Dynamic Metric Cards -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-6">
+                                <div class="bg-dark p-3 rounded border border-secondary text-center">
+                                    <small class="text-muted-custom d-block">TOTAL LOGS</small>
+                                    <span class="fs-4 fw-bold text-info" id="statTotalLogs">--</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-dark p-3 rounded border border-secondary text-center">
+                                    <small class="text-muted-custom d-block">LAST SYNC</small>
+                                    <span class="fs-6 fw-bold text-gradient d-block mt-1" id="statLastSync">--:--:--</span>
+                                </div>
+                            </div>
+                        </div>
 
-        <!-- Floating Competitor Visual Nodes -->
-        <div class="row g-4 mt-4">
-            <div class="col-md-4 text-center">
-                <img src="assets/img/Gemini_home1.png" alt="Gemini Engine Preview" class="img-fluid vk-float-img mb-2">
-                <h4 class="h6 text-info">GEMINI NODE</h4>
-            </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/img/Claude_home1.png" alt="Claude Engine Preview" class="img-fluid vk-float-img mb-2">
-                <h4 class="h6 text-light">CLAUDE NODE</h4>
-            </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/img/ChatGPT_home1.png" alt="ChatGPT Engine Preview" class="img-fluid vk-float-img mb-2">
-                <h4 class="h6 text-success">CHATGPT NODE</h4>
-            </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/img/CoPilot_home1.png" alt="CoPilot Engine Preview" class="img-fluid vk-float-img mb-2">
-                <h4 class="h6 text-primary">COPILOT NODE</h4>
-            </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/img/DeepSeek_Home1.png" alt="DeepSeek Engine Preview" class="img-fluid vk-float-img mb-2">
-                <h4 class="h6 text-danger">DEEPSEEK NODE</h4>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Section 3: Dual-Step Multi-LLM Public Voting Engine -->
-<section id="voting-module" class="mb-5">
-    <div class="vk-hud-card p-4 p-md-5 border-info">
-        <div class="row align-items-center">
-            <div class="col-lg-6 mb-4 mb-lg-0">
-                <h2 class="text-warning mb-3"><i class="fa-solid fa-check-to-slot me-2"></i>CAST YOUR TELEMETRY VOTE</h2>
-                <p>
-                    Who is demonstrating superior software engineering capability in this competition? Cast your vote below to influence the experiment's public ledger.
-                </p>
-                <p class="small text-muted font-monospace">
-                    * Multi-Step Validation Protocol: Submissions are stored in the Valkyrin DB before initiating secure SMTP confirmation alerts to your email and the lead engineer at info@beardedviking.org.
-                </p>
-            </div>
-
-            <div class="col-lg-6">
-                <?php if ($voteSuccess): ?>
-                    <div class="alert alert-success border-success text-center p-4 rounded" role="alert">
-                        <i class="fa-solid fa-circle-check fa-3x mb-3 text-success"></i>
-                        <h3 class="h5">TELEMETRY SIGNAL RECORDED</h3>
-                        <p class="mb-0">Your vote has been saved to the database. Confirmation dispatches have been transmitted to your email and the lead engineer.</p>
+                        <div class="p-3 border border-secondary rounded bg-dark">
+                            <small class="text-info font-monospace"><i class="fa-solid fa-terminal me-2"></i>Client Node Hash:</small>
+                            <code class="d-block text-truncate text-muted small mt-1">
+                                <?= hash('sha256', ($_SERVER['REMOTE_ADDR'] ?? '127.0.0.1') . date('Y-m-d')); ?>
+                            </code>
+                        </div>
                     </div>
-                <?php else: ?>
-                    <?php if (!empty($voteError)): ?>
-                        <div class="alert alert-danger mb-3 font-monospace small"><?= $voteError; ?></div>
-                    <?php endif; ?>
-
-                    <form action="about.php#voting-module" method="POST" class="p-3 border border-secondary rounded bg-dark">
-                        <input type="hidden" name="action" value="cast_vote">
-                        <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token']; ?>">
-
-                        <div class="mb-3">
-                            <label for="voter_name" class="form-label text-info font-monospace">VOTER IDENTIFIER / NAME</label>
-                            <input type="text" class="form-control bg-secondary text-white border-info" id="voter_name" name="voter_name" required placeholder="e.g., Alex Ragnarok">
+                    
+                    <div class="col-lg-7">
+                        <div class="p-3 bg-dark rounded border border-secondary">
+                            <h5 class="font-cinzel text-center small mb-3 text-muted">REAL-TIME TRAFFIC CLASSIFICATION (POLLING MYSQL)</h5>
+                            <div style="height: 280px; position: relative;">
+                                <canvas id="telemetryChart"></canvas>
+                            </div>
                         </div>
-
-                        <div class="mb-3">
-                            <label for="voter_email" class="form-label text-info font-monospace">DISPATCH EMAIL ADDRESS</label>
-                            <input type="email" class="form-control bg-secondary text-white border-info" id="voter_email" name="voter_email" required placeholder="name@domain.com">
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="selected_llm" class="form-label text-info font-monospace">SELECT LEADING LLM NODE</label>
-                            <select class="form-select bg-secondary text-white border-info" id="selected_llm" name="selected_llm" required>
-                                <option value="" selected disabled>Choose candidate...</option>
-                                <option value="Gemini">Google Gemini (Valkyrin Engine)</option>
-                                <option value="Claude">Claude (RavenWarp Engine)</option>
-                                <option value="ChatGPT">ChatGPT (Nexora Engine)</option>
-                                <option value="DeepSeek">DeepSeek (Nexus Valhalla Engine)</option>
-                                <option value="CoPilot">CoPilot (SagaSphere Engine)</option>
-                            </select>
-                        </div>
-
-                        <button type="submit" class="btn vk-btn-glow w-100 py-2">
-                            <i class="fa-solid fa-paper-plane me-2"></i>TRANSMIT VOTE SIGNAL
-                        </button>
-                    </form>
-                <?php endif; ?>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
 
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+        <!-- Section 3: Full AI Model Competitor Matrix -->
+        <section class="mb-5">
+            <h2 class="font-cinzel h3 text-center mb-4">Complete Competitor Performance Matrix</h2>
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle border border-secondary vk-card">
+                    <thead>
+                        <tr class="table-active font-cinzel">
+                            <th>AI Model</th>
+                            <th>UI/UX Precision</th>
+                            <th>Back-End Logic</th>
+                            <th>Path Integrity</th>
+                            <th>Rank & Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold"><i class="fa-solid fa-robot text-info me-2"></i>Gemini AI</td>
+                            <td><span class="text-info">9.5/10</span> (Sleek Cyberpunk UX)</td>
+                            <td><span class="text-success">9.5/10</span> (Hardened PDO Engine)</td>
+                            <td><span class="text-success">10/10</span> (Flawless Routing)</td>
+                            <td><span class="badge bg-success">1st Place / Leader</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold"><i class="fa-solid fa-bolt text-info me-2"></i>Claude</td>
+                            <td><span class="text-info">9.2/10</span> (Clean Structure)</td>
+                            <td><span class="text-info">9.0/10</span> (Strong OOP Syntax)</td>
+                            <td><span class="text-info">9.0/10</span> (High Accuracy)</td>
+                            <td><span class="badge bg-info text-dark">2nd Place / Contender</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold"><i class="fa-solid fa-code text-primary me-2"></i>Copilot</td>
+                            <td><span class="text-warning">7.8/10</span> (Standard Modern)</td>
+                            <td><span class="text-info">8.0/10</span> (Reliable Snippets)</td>
+                            <td><span class="text-warning">7.5/10</span> (Minor Path Drift)</td>
+                            <td><span class="badge bg-primary">3rd Place / Solid</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold"><i class="fa-solid fa-comments text-secondary me-2"></i>ChatGPT</td>
+                            <td><span class="text-warning">6.0/10</span> (Generic Layouts)</td>
+                            <td><span class="text-warning">6.0/10</span> (Loop Susceptible)</td>
+                            <td><span class="text-warning">5.0/10</span> (Needs Guidance)</td>
+                            <td><span class="badge bg-secondary">4th Place (5.0)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted"><i class="fa-solid fa-skull text-danger me-2"></i>DeepSeek</td>
+                            <td><span class="text-success">9.0/10</span> (Great Aesthetics)</td>
+                            <td><span class="text-danger">2.0/10</span> (Broken PDO Logic)</td>
+                            <td><span class="text-danger">1.0/10</span> (Phantom Directories)</td>
+                            <td><span class="badge bg-danger">Disqualified</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Section 4: Lead Engineer Dossier -->
+        <section class="mb-4">
+            <div class="vk-card p-4 p-md-5">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-3 text-center">
+                        <i class="fa-solid fa-user-shield text-accent display-1 mb-3"></i>
+                        <h5 class="font-cinzel fw-bold mb-0">Bearded Viking</h5>
+                        <small class="text-muted-custom">Chief Systems Architect</small>
+                    </div>
+                    <div class="col-md-9">
+                        <h3 class="font-cinzel text-gradient mb-2">Behind the Console</h3>
+                        <p class="text-muted-custom">
+                            Operating out of Texas and Illinois headquarters, <strong>Bearded Viking</strong> is an independent developer, web security researcher, and creator of the <strong>VALKYRIN</strong> framework. Maintaining active project hubs across GitHub, Medium, LinkedIn, and X, the Bearded Viking initiative focuses on exposing security vulnerabilities in raw AI-generated code while building resilient, user-sovereign web software.
+                        </p>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <span class="badge bg-dark border border-secondary text-info"><i class="fa-solid fa-shield-halved me-1"></i> Web Security</span>
+                            <span class="badge bg-dark border border-secondary text-info"><i class="fa-code me-1"></i> Full-Stack PHP/MySQL</span>
+                            <span class="badge bg-dark border border-secondary text-info"><i class="fa-brands fa-linux me-1"></i> LiteSpeed Server Admin</span>
+                            <span class="badge bg-dark border border-secondary text-info"><i class="fa-solid fa-lock me-1"></i> Near-ZK Architecture</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+</main>
+
+<!-- Live Telemetry Polling Script -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const ctx = document.getElementById('telemetryChart');
+    let telemetryChart = null;
+
+    if (ctx && typeof Chart !== 'undefined') {
+        // Initialize Chart with empty datasets
+        telemetryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Standard Browsers', 'Crawler Bots', 'Automated Tools'],
+                datasets: [{
+                    data: [0, 0, 0],
+                    backgroundColor: ['#00f2fe', '#ff2a6d', '#4facfe'],
+                    borderColor: '#0f141d',
+                    borderWidth: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 500 },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#e0e6ed', font: { family: 'Cinzel' } }
+                    }
+                }
+            }
+        });
+
+        // Function to Fetch Data from Real-Time Endpoint
+        async function updateTelemetryChart() {
+            try {
+                const response = await fetch('/api/telemetry.php');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Update Chart Data Arrays
+                    telemetryChart.data.datasets[0].data = [
+                        data.categories['Standard Browser'] || 0,
+                        data.categories['Crawler Bot'] || 0,
+                        data.categories['Automated Tool'] || 0
+                    ];
+                    telemetryChart.update();
+
+                    // Update Metric Badges
+                    document.getElementById('statTotalLogs').innerText = data.total_logs;
+                    document.getElementById('statLastSync').innerText = data.timestamp;
+                }
+            } catch (err) {
+                console.error("Telemetry fetch error:", err);
+            }
+        }
+
+        // Trigger initial fetch and set 3-second live poll interval
+        updateTelemetryChart();
+        setInterval(updateTelemetryChart, 3000);
+    }
+});
+</script>
+
+<?php
+require_once __DIR__ . '/includes/footer.php';
+?>
