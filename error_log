@@ -23,3 +23,20 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 331
+[10-Sep-2026 01:00:16 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'p.media_url' in 'SELECT' in /home/beardedviking/valkyrin.beardedviking.org/feed.php:41
+Stack trace:
+#0 /home/beardedviking/valkyrin.beardedviking.org/feed.php(41): PDO->prepare()
+#1 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 41
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/header.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 46
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/header.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 46
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(): Failed opening '/includes/header.php' for inclusion (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 46
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/nav.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 47
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/nav.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 47
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(): Failed opening '/includes/nav.php' for inclusion (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 47
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 294
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(/includes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 294
+[10-Sep-2026 01:04:15 UTC] PHP Warning:  include(): Failed opening '/includes/footer.php' for inclusion (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 294
+[10-Sep-2026 01:04:50 UTC] PHP Warning:  include(/includes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 293
+[10-Sep-2026 01:04:50 UTC] PHP Warning:  include(/includes/footer.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 293
+[10-Sep-2026 01:04:50 UTC] PHP Warning:  include(): Failed opening '/includes/footer.php' for inclusion (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/feed.php on line 293

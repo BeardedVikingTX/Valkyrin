@@ -225,3 +225,19 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 12
+[10-Sep-2026 00:13:14 UTC] PHP Fatal error:  Uncaught Error: Undefined constant "reactionType" in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:110
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 110
+[10-Sep-2026 00:13:15 UTC] PHP Fatal error:  Uncaught Error: Undefined constant "reactionType" in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:110
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 110
+[10-Sep-2026 00:13:16 UTC] PHP Fatal error:  Uncaught Error: Undefined constant "reactionType" in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:110
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 110
+[10-Sep-2026 00:42:01 UTC] PHP Fatal error:  Uncaught Error: Call to undefined function getUserDisplayNameSql() in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:42
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 42

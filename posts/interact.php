@@ -5,330 +5,348 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-header('Content-Type: application/json; charset=utf-8');
+header('Content-Type: application/json');
 
-// -----------------------------------------------------------------------------
-// 1. SECURITY & INITIALIZATION
-// -----------------------------------------------------------------------------
+// Session Authentication Safeguard
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'error' => 'Authentication required']);
     exit();
 }
 
-require_once __DIR__ . '/../includes/database.php'; // Provides PDO instance $pdo
+require_once __DIR__ . '/../includes/database.php';
 
-$currentUserId = (int)$_SESSION['user_id'];
+$userId = (int)$_SESSION['user_id'];
 $action = $_REQUEST['action'] ?? '';
 
-// Point values map for reactions
-$pointWeights = [
-    'valhalla' => 10,
-    'honor'    => 5,
-    'dishonor' => -2,
-    'strike'   => -5
-];
-
-// Helper Function: Send Email Alerts
-function sendNotificationEmail($toEmail, $subject, $bodyText) {
-    if (empty($toEmail) || !filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
-        return false;
-    }
-    $headers  = "From: VALKYRIN System <noreply@beardedviking.org>\r\n";
-    $headers .= "Reply-To: no-reply@beardedviking.org\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-    $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
-
-    return @mail($toEmail, $subject, $bodyText, $headers);
+if (!isset($pdo)) {
+    echo json_encode(['success' => false, 'error' => 'Database connection unavailable']);
+    exit();
 }
 
-// -----------------------------------------------------------------------------
-// 2. ROUTE: TOGGLE / CAST REACTION
-// -----------------------------------------------------------------------------
-if ($action === 'toggle_reaction') {
-    $postId = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
-    $reactionType = $_POST['reaction_type'] ?? '';
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    if ($postId <= 0 || !array_key_exists($reactionType, $pointWeights)) {
-        echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
-        exit();
-    }
-
-    try {
-        $pdo->beginTransaction();
-
-        // Check post existence & ownership
-        $stmt = $pdo->prepare("
-            SELECT p.id, p.user_id AS author_id, u.email AS author_email, u.username AS author_name 
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.id = :post_id
-        ");
-        $stmt->execute([':post_id' => $postId]);
-        $post = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$post) {
-            $pdo->rollBack();
-            echo json_encode(['success' => false, 'error' => 'Signal node not found']);
-            exit();
-        }
-
-        // Rule: Authors cannot vote on their own posts
-        if ((int)$post['author_id'] === $currentUserId) {
-            $pdo->rollBack();
-            echo json_encode(['success' => false, 'error' => 'Authors cannot cast votes on their own signals']);
-            exit();
-        }
-
-        // Check if user has already reacted
-        $stmt = $pdo->prepare("SELECT reaction_type FROM post_reactions WHERE post_id = :post_id AND user_id = :user_id");
-        $stmt->execute([':post_id' => $postId, ':user_id' => $currentUserId]);
-        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($existing) {
-            $pdo->rollBack();
-            echo json_encode(['success' => false, 'error' => 'Reaction locked. You have already voted on this signal']);
-            exit();
-        }
-
-        // Insert new reaction
-        $stmt = $pdo->prepare("
-            INSERT INTO post_reactions (post_id, user_id, reaction_type) 
-            VALUES (:post_id, :user_id, :reaction_type)
-        ");
-        $stmt->execute([
-            ':post_id'       => $postId,
-            ':user_id'       => $currentUserId,
-            ':reaction_type' => $reactionType
-        ]);
-
-        // Award/Deduct Points to Post Author
-        $earnedPoints = $pointWeights[$reactionType];
-        $stmt = $pdo->prepare("UPDATE users SET points = points + :pts WHERE id = :author_id");
-        $stmt->execute([':pts' => $earnedPoints, ':author_id' => $post['author_id']]);
-
-        // Fetch actor details for notifications
-        $stmt = $pdo->prepare("SELECT username FROM users WHERE id = :uid");
-        $stmt->execute([':uid' => $currentUserId]);
-        $actor = $stmt->fetch(PDO::FETCH_ASSOC);
-        $actorName = $actor['username'] ?? 'A user';
-
-        // Insert Database Notification
-        $notifMsg = "{$actorName} cast a {$reactionType} reaction on your signal.";
-        $stmt = $pdo->prepare("
-            INSERT INTO notifications (user_id, actor_id, type, target_id, message)
-            VALUES (:user_id, :actor_id, 'reaction', :target_id, :message)
-        ");
-        $stmt->execute([
-            ':user_id'  => $post['author_id'],
-            ':actor_id' => $currentUserId,
-            ':target_id'=> $postId,
-            ':message'  => $notifMsg
-        ]);
-
-        $pdo->commit();
-
-        // Dispatch Email Alert to Post Author
-        $emailSubject = "VALKYRIN - New Signal Reaction";
-        $emailBody    = "Greetings {$post['author_name']},\n\n"
-                      . "User '{$actorName}' cast a [{$reactionType}] reaction on your signal node (#{$postId}).\n"
-                      . "Reputation Point adjustment: {$earnedPoints}\n\n"
-                      . "View your feed to inspect details.\n\n-- VALKYRIN Network";
-        sendNotificationEmail($post['author_email'], $emailSubject, $emailBody);
-
-        // Fetch updated reaction breakdown
-        $stmt = $pdo->prepare("
-            SELECT 
-                COALESCE(SUM(CASE WHEN reaction_type = 'valhalla' THEN 1 ELSE 0 END), 0) AS valhalla,
-                COALESCE(SUM(CASE WHEN reaction_type = 'honor' THEN 1 ELSE 0 END), 0) AS honor,
-                COALESCE(SUM(CASE WHEN reaction_type = 'dishonor' THEN 1 ELSE 0 END), 0) AS dishonor,
-                COALESCE(SUM(CASE WHEN reaction_type = 'strike' THEN 1 ELSE 0 END), 0) AS strike
-            FROM post_reactions 
-            WHERE post_id = :post_id
-        ");
-        $stmt->execute([':post_id' => $postId]);
-        $breakdown = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        echo json_encode([
-            'success'       => true,
-            'user_reaction' => $reactionType,
-            'breakdown'     => $breakdown
-        ]);
-        exit();
-
-    } catch (PDOException $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        echo json_encode(['success' => false, 'error' => 'Database failure during reaction processing']);
-        exit();
-    }
+// Dynamic Display Name SQL Helper
+function getDisplayNameColumnSelect($tableAlias = 'u') {
+    return "COALESCE(NULLIF({$tableAlias}.username, ''), {$tableAlias}.email, 'Viking')";
 }
 
-// -----------------------------------------------------------------------------
-// 3. ROUTE: FETCH COMMENTS
-// -----------------------------------------------------------------------------
+// Dynamic Avatar Column Detector & Path Formatter
+function getAvatarColumnSelect($pdo, $tableAlias = 'u') {
+    static $avatarColumn = null;
+    if ($avatarColumn === null) {
+        try {
+            $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar'");
+            if ($stmt->fetch()) {
+                $avatarColumn = 'avatar';
+            } else {
+                $stmt = $pdo->query("SHOW COLUMNS FROM users LIKE 'avatar_url'");
+                $avatarColumn = $stmt->fetch() ? 'avatar_url' : null;
+            }
+        } catch (Throwable $e) {
+            $avatarColumn = null;
+        }
+    }
+
+    if ($avatarColumn) {
+        return "{$tableAlias}.{$avatarColumn}";
+    }
+    return "'/assets/images/default_avatar.png'";
+}
+
+// Helper to normalize relative upload paths for JSON output
+function formatAvatarUrl($avatarPath) {
+    if (empty($avatarPath) || $avatarPath === 'default_avatar.png') {
+        return '/assets/images/default_avatar.png';
+    }
+    if (strpos($avatarPath, '/') === 0 || strpos($avatarPath, 'http') === 0) {
+        return $avatarPath;
+    }
+    return '/uploads/profiles/' . $avatarPath;
+}
+
+// -------------------------------------------------------------------
+// 1. FETCH COMMENTS
+// -------------------------------------------------------------------
 if ($action === 'fetch_comments') {
-    $postId = isset($_GET['post_id']) ? (int)$_GET['post_id'] : 0;
-
-    if ($postId <= 0) {
-        echo json_encode(['success' => false, 'error' => 'Invalid post reference']);
+    $postId = (int)($_GET['post_id'] ?? 0);
+    if (!$postId) {
+        echo json_encode(['success' => false, 'error' => 'Invalid post ID']);
         exit();
     }
 
     try {
+        $displayNameSql = getDisplayNameColumnSelect('u');
+        $avatarSql      = getAvatarColumnSelect($pdo, 'u');
+
         $stmt = $pdo->prepare("
             SELECT 
                 c.id, 
-                c.post_id, 
-                c.parent_id, 
                 c.content, 
                 c.created_at, 
-                u.username, 
-                u.avatar
-            FROM post_comments c
-            JOIN users u ON c.user_id = u.id
-            WHERE c.post_id = :post_id
+                u.id AS user_id, 
+                {$displayNameSql} AS display_name, 
+                {$avatarSql} AS raw_avatar 
+            FROM comments c 
+            JOIN users u ON c.user_id = u.id 
+            WHERE c.post_id = ? 
             ORDER BY c.created_at ASC
         ");
-        $stmt->execute([':post_id' => $postId]);
+        $stmt->execute([$postId]);
         $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Format dates cleanly
-        foreach ($comments as &$c) {
-            $c['created_at'] = date('M j, Y - H:i', strtotime($c['created_at']));
+        foreach ($comments as &$comment) {
+            $comment['avatar_url'] = formatAvatarUrl($comment['raw_avatar'] ?? '');
+            unset($comment['raw_avatar']);
+            $comment['formatted_time'] = date('M j, Y \a\t g:i a', strtotime($comment['created_at']));
+            $comment['content'] = nl2br(htmlspecialchars($comment['content'], ENT_QUOTES, 'UTF-8'));
         }
 
-        echo json_encode(['success' => true, 'comments' => $comments]);
-        exit();
-
-    } catch (PDOException $e) {
-        echo json_encode(['success' => false, 'error' => 'Failed to retrieve signal logs']);
-        exit();
+        echo json_encode([
+            'success'  => true, 
+            'comments' => $comments,
+            'count'    => count($comments)
+        ]);
+    } catch (Throwable $e) {
+        echo json_encode([
+            'success' => false, 
+            'error'   => 'FETCH ERROR: ' . $e->getMessage()
+        ]);
     }
+    exit();
 }
 
-// -----------------------------------------------------------------------------
-// 4. ROUTE: ADD COMMENT / REPLY
-// -----------------------------------------------------------------------------
+// -------------------------------------------------------------------
+// 2. ADD COMMENT
+// -------------------------------------------------------------------
 if ($action === 'add_comment') {
-    $postId   = isset($_POST['post_id']) ? (int)$_POST['post_id'] : 0;
-    $parentId = isset($_POST['parent_id']) ? (int)$_POST['parent_id'] : 0;
-    $content  = isset($_POST['content']) ? trim($_POST['content']) : '';
+    $postId  = (int)($_POST['post_id'] ?? 0);
+    $content = trim($_POST['content'] ?? '');
 
-    if ($postId <= 0 || empty($content)) {
-        echo json_encode(['success' => false, 'error' => 'Log transmission cannot be empty']);
+    if (!$postId || empty($content)) {
+        echo json_encode(['success' => false, 'error' => 'Comment content cannot be empty']);
         exit();
     }
 
     try {
-        $pdo->beginTransaction();
-
-        // 1. Fetch post and author details
-        $stmt = $pdo->prepare("
-            SELECT p.id, p.user_id AS author_id, u.email AS author_email, u.username AS author_name 
-            FROM posts p
-            JOIN users u ON p.user_id = u.id
-            WHERE p.id = :post_id
-        ");
-        $stmt->execute([':post_id' => $postId]);
-        $post = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$post) {
-            $pdo->rollBack();
-            echo json_encode(['success' => false, 'error' => 'Signal node missing']);
-            exit();
-        }
-
-        // 2. Fetch commenting user details
-        $stmt = $pdo->prepare("SELECT username FROM users WHERE id = :uid");
-        $stmt->execute([':uid' => $currentUserId]);
-        $commenter = $stmt->fetch(PDO::FETCH_ASSOC);
-        $commenterName = $commenter['username'] ?? 'A user';
-
-        // 3. Insert Comment
-        $stmt = $pdo->prepare("
-            INSERT INTO post_comments (post_id, user_id, parent_id, content) 
-            VALUES (:post_id, :user_id, :parent_id, :content)
-        ");
-        $stmt->execute([
-            ':post_id'   => $postId,
-            ':user_id'   => $currentUserId,
-            ':parent_id' => $parentId,
-            ':content'   => $content
-        ]);
+        // A. Insert Comment Record
+        $stmt = $pdo->prepare("INSERT INTO comments (post_id, user_id, content, created_at) VALUES (?, ?, ?, NOW())");
+        $stmt->execute([$postId, $userId, $content]);
         $newCommentId = $pdo->lastInsertId();
 
-        // 4. Award Points for participating (+2 points for posting a comment)
-        $stmt = $pdo->prepare("UPDATE users SET points = points + 2 WHERE id = :uid");
-        $stmt->execute([':uid' => $currentUserId]);
+        // B. Fetch Post Owner Details
+        $displayNameSql = getDisplayNameColumnSelect('u');
+        $postStmt = $pdo->prepare("
+            SELECT p.user_id AS owner_id, u.email AS owner_email, {$displayNameSql} AS owner_name 
+            FROM posts p 
+            JOIN users u ON p.user_id = u.id 
+            WHERE p.id = ?
+        ");
+        $postStmt->execute([$postId]);
+        $postOwner = $postStmt->fetch(PDO::FETCH_ASSOC);
 
-        // 5. Determine Notification Target (Parent comment author OR Post author)
-        $targetUserId = $post['author_id'];
-        $targetEmail  = $post['author_email'];
-        $targetName   = $post['author_name'];
-        $notifType    = 'comment';
+        // C. Fetch Commenter Details
+        $commenterDisplayNameSql = getDisplayNameColumnSelect('users');
+        $commenterAvatarSql      = getAvatarColumnSelect($pdo, 'users');
 
-        if ($parentId > 0) {
-            $stmt = $pdo->prepare("
-                SELECT c.user_id, u.email, u.username 
-                FROM post_comments c
-                JOIN users u ON c.user_id = u.id
-                WHERE c.id = :parent_id
-            ");
-            $stmt->execute([':parent_id' => $parentId]);
-            $parentComment = $stmt->fetch(PDO::FETCH_ASSOC);
+        $commenterStmt = $pdo->prepare("
+            SELECT {$commenterDisplayNameSql} AS display_name, {$commenterAvatarSql} AS raw_avatar 
+            FROM users 
+            WHERE id = ?
+        ");
+        $commenterStmt->execute([$userId]);
+        $commenter = $commenterStmt->fetch(PDO::FETCH_ASSOC);
 
-            if ($parentComment) {
-                $targetUserId = $parentComment['user_id'];
-                $targetEmail  = $parentComment['email'];
-                $targetName   = $parentComment['username'];
-                $notifType    = 'reply';
+        $commenterAvatar = formatAvatarUrl($commenter['raw_avatar'] ?? '');
+        $commenterName   = $commenter['display_name'] ?? 'Viking';
+
+        // D. Notifications
+        if ($postOwner && (int)$postOwner['owner_id'] !== $userId) {
+            $ownerId    = (int)$postOwner['owner_id'];
+            $ownerEmail = $postOwner['owner_email'];
+            $notifMsg   = "{$commenterName} commented on your signal.";
+
+            // In-App Notification Engine with Unread Status Flag
+            try {
+                $notifStmt = $pdo->prepare("
+                    INSERT INTO notifications (user_id, actor_id, post_id, type, message, is_read, created_at) 
+                    VALUES (?, ?, ?, 'comment', ?, 0, NOW())
+                ");
+                $notifStmt->execute([$ownerId, $userId, $postId, $notifMsg]);
+            } catch (Throwable $notifEx) {
+                // Fallback for schemas without is_read column
+                try {
+                    $notifStmt = $pdo->prepare("
+                        INSERT INTO notifications (user_id, actor_id, post_id, type, message, created_at) 
+                        VALUES (?, ?, ?, 'comment', ?, NOW())
+                    ");
+                    $notifStmt->execute([$ownerId, $userId, $postId, $notifMsg]);
+                } catch (Throwable $e) {}
+            }
+
+            // Email Notification Dispatch
+            if (!empty($ownerEmail) && filter_var($ownerEmail, FILTER_VALIDATE_EMAIL)) {
+                $subject = "New Signal Comment from " . $commenterName;
+                $headers = "MIME-Version: 1.0\r\n";
+                $headers .= "Content-type:text/html;charset=UTF-8\r\n";
+                $headers .= 'From: VALKYRIN <no-reply@beardedviking.org>' . "\r\n";
+
+                $emailBody = "
+                    <div style='font-family: Arial, sans-serif; background: #0f1115; color: #e0e0e0; padding: 20px; border-radius: 8px;'>
+                        <h2 style='color: #4facfe; margin-top: 0;'>New Signal Log Received</h2>
+                        <p>Hail, <strong>" . htmlspecialchars($postOwner['owner_name'], ENT_QUOTES, 'UTF-8') . "</strong>,</p>
+                        <p><strong>" . htmlspecialchars($commenterName, ENT_QUOTES, 'UTF-8') . "</strong> left a comment on your signal:</p>
+                        <blockquote style='background: #1a1d24; border-left: 4px solid #4facfe; margin: 15px 0; padding: 12px; color: #fff;'>
+                            \"" . htmlspecialchars($content, ENT_QUOTES, 'UTF-8') . "\"
+                        </blockquote>
+                        <p style='margin-top: 20px;'>
+                            <a href='https://beardedviking.org/users/dashboard.php#post-" . $postId . "' style='background: #4facfe; color: #fff; padding: 10px 18px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;'>View Signal Log</a>
+                        </p>
+                    </div>
+                ";
+
+                @mail($ownerEmail, $subject, $emailBody, $headers);
             }
         }
 
-        // Avoid sending notification if commenting on one's own post/comment
-        if ($targetUserId !== $currentUserId) {
-            $notifMsg = ($notifType === 'reply')
-                ? "{$commenterName} replied to your log entry."
-                : "{$commenterName} logged a response on your signal node.";
-
-            $stmt = $pdo->prepare("
-                INSERT INTO notifications (user_id, actor_id, type, target_id, message)
-                VALUES (:user_id, :actor_id, :type, :target_id, :message)
-            ");
-            $stmt->execute([
-                ':user_id'  => $targetUserId,
-                ':actor_id' => $currentUserId,
-                ':type'     => $notifType,
-                ':target_id'=> $newCommentId,
-                ':message'  => $notifMsg
-            ]);
-
-            $emailSubject = "VALKYRIN - New Log Transmission";
-            $emailBody    = "Greetings {$targetName},\n\n"
-                          . "{$commenterName} left a response: \"{$content}\"\n\n"
-                          . "Log into VALKYRIN to view the thread.\n\n-- VALKYRIN Network";
-            
-            sendNotificationEmail($targetEmail, $emailSubject, $emailBody);
-        }
-
-        $pdo->commit();
-
         echo json_encode([
-            'success'    => true,
-            'comment_id' => $newCommentId
+            'success'        => true,
+            'comment_id'     => $newCommentId,
+            'content'        => nl2br(htmlspecialchars($content, ENT_QUOTES, 'UTF-8')),
+            'display_name'   => $commenterName,
+            'avatar_url'     => $commenterAvatar,
+            'formatted_time' => date('M j, Y \a\t g:i a')
         ]);
-        exit();
-
-    } catch (PDOException $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-        echo json_encode(['success' => false, 'error' => 'Database error while logging comment']);
-        exit();
+    } catch (Throwable $e) {
+        echo json_encode([
+            'success' => false, 
+            'error'   => 'ADD COMMENT ERROR: ' . $e->getMessage()
+        ]);
     }
+    exit();
 }
 
-// Fallback for unhandled action routes
-echo json_encode(['success' => false, 'error' => 'Invalid or missing endpoint action']);
+// -------------------------------------------------------------------
+// 3. TOGGLE REACTION
+// -------------------------------------------------------------------
+if ($action === 'toggle_reaction') {
+    $postId       = (int)($_POST['post_id'] ?? 0);
+    $reactionType = trim($_POST['reaction_type'] ?? '');
+    $allowedTypes = ['valhalla', 'honor', 'dishonor', 'strike'];
+
+    if (!$postId || !in_array($reactionType, $allowedTypes, true)) {
+        echo json_encode(['success' => false, 'error' => 'Invalid reaction parameter']);
+        exit();
+    }
+
+    try {
+        $checkAuthor = $pdo->prepare("SELECT user_id FROM posts WHERE id = ?");
+        $checkAuthor->execute([$postId]);
+        $postOwnerId = (int)$checkAuthor->fetchColumn();
+
+        if ($postOwnerId === $userId) {
+            echo json_encode(['success' => false, 'error' => 'Authors cannot react to their own signals']);
+            exit();
+        }
+
+        $stmt = $pdo->prepare("SELECT id, reaction_type FROM post_reactions WHERE post_id = ? AND user_id = ?");
+        $stmt->execute([$postId, $userId]);
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $activeUserReaction = null;
+
+        if ($existing) {
+            if ($existing['reaction_type'] === $reactionType) {
+                $del = $pdo->prepare("DELETE FROM post_reactions WHERE id = ?");
+                $del->execute([$existing['id']]);
+            } else {
+                $upd = $pdo->prepare("UPDATE post_reactions SET reaction_type = ? WHERE id = ?");
+                $upd->execute([$reactionType, $existing['id']]);
+                $activeUserReaction = $reactionType;
+            }
+        } else {
+            $ins = $pdo->prepare("INSERT INTO post_reactions (post_id, user_id, reaction_type, created_at) VALUES (?, ?, ?, NOW())");
+            $ins->execute([$postId, $userId, $reactionType]);
+            $activeUserReaction = $reactionType;
+
+            if ($postOwnerId && $postOwnerId !== $userId) {
+                try {
+                    $displayNameSql = getDisplayNameColumnSelect('users');
+                    $userStmt = $pdo->prepare("SELECT {$displayNameSql} FROM users WHERE id = ?");
+                    $userStmt->execute([$userId]);
+                    $actorName = $userStmt->fetchColumn() ?: 'Viking';
+
+                    $notifMsg = "{$actorName} reacted to your signal with " . ucfirst($reactionType) . ".";
+                    $notifStmt = $pdo->prepare("
+                        INSERT INTO notifications (user_id, actor_id, post_id, type, message, is_read, created_at) 
+                        VALUES (?, ?, ?, 'reaction', ?, 0, NOW())
+                    ");
+                    $notifStmt->execute([$postOwnerId, $userId, $postId, $notifMsg]);
+                } catch (Throwable $notifEx) {
+                    try {
+                        $notifStmt = $pdo->prepare("
+                            INSERT INTO notifications (user_id, actor_id, post_id, type, message, created_at) 
+                            VALUES (?, ?, ?, 'reaction', ?, NOW())
+                        ");
+                        $notifStmt->execute([$postOwnerId, $userId, $postId, $notifMsg]);
+                    } catch (Throwable $e) {}
+                }
+            }
+        }
+
+        $countStmt = $pdo->prepare("
+            SELECT reaction_type, COUNT(*) as cnt 
+            FROM post_reactions 
+            WHERE post_id = ? 
+            GROUP BY reaction_type
+        ");
+        $countStmt->execute([$postId]);
+        $rawCounts = $countStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        $breakdown = [
+            'valhalla' => (int)($rawCounts['valhalla'] ?? 0),
+            'honor'    => (int)($rawCounts['honor'] ?? 0),
+            'dishonor' => (int)($rawCounts['dishonor'] ?? 0),
+            'strike'   => (int)($rawCounts['strike'] ?? 0)
+        ];
+
+        echo json_encode([
+            'success'       => true,
+            'user_reaction' => $activeUserReaction,
+            'breakdown'     => $breakdown
+        ]);
+    } catch (Throwable $e) {
+        echo json_encode([
+            'success' => false, 
+            'error'   => 'REACTION ERROR: ' . $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+// -------------------------------------------------------------------
+// 4. FETCH COMMENT COUNT
+// -------------------------------------------------------------------
+if ($action === 'get_comment_count') {
+    $postId = (int)($_GET['post_id'] ?? 0);
+    if (!$postId) {
+        echo json_encode(['success' => false, 'error' => 'Invalid post ID']);
+        exit();
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM comments WHERE post_id = ?");
+        $stmt->execute([$postId]);
+        $count = (int)$stmt->fetchColumn();
+
+        echo json_encode(['success' => true, 'count' => $count]);
+    } catch (Throwable $e) {
+        echo json_encode([
+            'success' => false, 
+            'error'   => 'COUNT ERROR: ' . $e->getMessage()
+        ]);
+    }
+    exit();
+}
+
+echo json_encode(['success' => false, 'error' => 'Invalid action requested']);
 exit();

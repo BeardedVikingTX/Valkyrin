@@ -17,16 +17,18 @@ require_once __DIR__ . '/includes/nav.php';
 $userId = (int)$_SESSION['user_id'];
 $successMessage = $_GET['success'] ?? '';
 
-// Inputs for filtering and hashtag search
-$filter = isset($_GET['filter']) && in_array($_GET['filter'], ['public', 'network', 'all']) 
+// Inputs for filtering, pagination, and hashtag search
+$filter = isset($_GET['filter']) && in_array($_GET['filter'], ['public', 'network', 'all'], true) 
     ? $_GET['filter'] 
     : 'all';
 
 $searchTag = trim($_GET['tag'] ?? '');
+$page = max(1, (int)($_GET['page'] ?? 1));
+$perPage = 20;
+$offset = ($page - 1) * $perPage;
 
 // Helper function to derive rank badges
-function getNodeBadge($rep) {
-    $rep = (int)$rep;
+function getNodeBadge(int $rep): array {
     if ($rep >= 5000) return ['title' => 'VALKYRIE PRIME', 'class' => 'bg-danger text-light', 'icon' => 'fa-crown'];
     if ($rep >= 2000) return ['title' => 'COMMANDER', 'class' => 'bg-warning text-dark', 'icon' => 'fa-shield-halved'];
     if ($rep >= 750)  return ['title' => 'SHIELDBEARER', 'class' => 'bg-accent text-dark', 'icon' => 'fa-shield'];
@@ -34,20 +36,16 @@ function getNodeBadge($rep) {
     return ['title' => 'INITIATE', 'class' => 'bg-secondary text-light', 'icon' => 'fa-seedling'];
 }
 
-// Clean and decode text safe for display
-function clean_display_text($text) {
+// Format sanitized display text
+function clean_display_text(?string $text): string {
     if (empty($text)) return '';
-    $previous = '';
-    while ($text !== $previous) {
-        $previous = $text;
-        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
-    $text = str_replace(["\r\n", "\r"], "\n", $text);
-    $text = str_replace(['&#13;', '&#10;', '&amp;#13;', '&amp;#10;'], '', $text);
-    return nl2br(htmlspecialchars($text, ENT_QUOTES, 'UTF-8'));
+    $decoded = html_entity_decode($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    return nl2br(htmlspecialchars($decoded, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
 }
 
 $posts = [];
+$totalPosts = 0;
+
 if (isset($pdo)) {
     try {
         $whereConditions = [];
@@ -96,38 +94,65 @@ if (isset($pdo)) {
             $params[':search_tag'] = '%' . $formattedTag . '%';
         }
 
-        $params[':current_user_id'] = $userId;
         $whereClause = implode(' AND ', $whereConditions);
 
+        // Count query for pagination calculation
+        $countSql = "SELECT COUNT(*) FROM posts p WHERE {$whereClause}";
+        $countStmt = $pdo->prepare($countSql);
+        $countStmt->execute($params);
+        $totalPosts = (int)$countStmt->fetchColumn();
+
+        // Optimized Main Stream Query
+        $params[':current_user_id'] = $userId;
+        
         $sql = "
             SELECT 
-                p.id AS post_id, p.content, p.visibility, p.attachment, p.attachment_type, p.tags, p.created_at AS post_created_at,
-                u.id AS author_id, u.username, u.display_name, u.avatar,
-                COALESCE(u.reputation_points, u.reputation, 0) AS reputation_points,
-                (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id) AS reaction_count,
-                (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND reaction_type = 'valhalla') AS valhalla_count,
-                (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND reaction_type = 'honor') AS honor_count,
-                (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND reaction_type = 'dishonor') AS dishonor_count,
-                (SELECT COUNT(*) FROM post_reactions WHERE post_id = p.id AND reaction_type = 'strike') AS strike_count,
-                (SELECT COUNT(*) FROM comments WHERE post_id = p.id) AS comment_count,
-                (SELECT reaction_type FROM post_reactions WHERE post_id = p.id AND user_id = :current_user_id LIMIT 1) AS user_reaction
+                p.id AS post_id, 
+                p.content, 
+                p.visibility, 
+                p.attachment, 
+                p.attachment_type, 
+                p.tags, 
+                p.created_at AS post_created_at,
+                u.id AS author_id, 
+                u.username, 
+                COALESCE(u.display_name, u.username) AS display_name, 
+                u.avatar,
+                COALESCE(u.reputation_points, 0) AS reputation_points,
+                (SELECT COUNT(*) FROM comments cm WHERE cm.post_id = p.id) AS comment_count,
+                COUNT(CASE WHEN pr.reaction_type = 'valhalla' THEN 1 END) AS valhalla_count,
+                COUNT(CASE WHEN pr.reaction_type = 'honor' THEN 1 END) AS honor_count,
+                COUNT(CASE WHEN pr.reaction_type = 'dishonor' THEN 1 END) AS dishonor_count,
+                COUNT(CASE WHEN pr.reaction_type = 'strike' THEN 1 END) AS strike_count,
+                MAX(CASE WHEN pr.user_id = :current_user_id THEN pr.reaction_type ELSE NULL END) AS user_reaction
             FROM posts p
             JOIN users u ON p.user_id = u.id
+            LEFT JOIN post_reactions pr ON pr.post_id = p.id
             WHERE {$whereClause}
+            GROUP BY p.id, u.id
             ORDER BY p.created_at DESC
-            LIMIT 50";
+            LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
+
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
         $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     } catch (PDOException $e) {
         $error = "System fault: Failed to retrieve network stream.";
     }
 }
+
+$totalPages = ceil($totalPosts / $perPage);
 ?>
 
-<!-- Header hero -->
+<!-- Header Hero -->
 <header class="py-4 bg-dark border-bottom border-secondary">
     <div class="container">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
@@ -169,16 +194,16 @@ if (isset($pdo)) {
 
             <!-- Hashtag Search Form -->
             <form method="GET" action="" class="d-flex gap-2">
-                <input type="hidden" name="filter" value="<?= htmlspecialchars($filter); ?>">
+                <input type="hidden" name="filter" value="<?= htmlspecialchars($filter, ENT_QUOTES, 'UTF-8'); ?>">
                 <div class="input-group input-group-sm">
-                    <span class="input-group-text bg-dark border-secondary text-muted-custom">#</span>
+                    <span class="input-group-text bg-dark border-secondary text-muted">#</span>
                     <input type="text" name="tag" class="form-control bg-dark text-light border-secondary" 
-                           placeholder="Filter tag..." value="<?= htmlspecialchars($searchTag); ?>">
+                           placeholder="Filter tag..." value="<?= htmlspecialchars($searchTag, ENT_QUOTES, 'UTF-8'); ?>">
                     <button type="submit" class="btn btn-outline-info">
                         <i class="fa-solid fa-magnifying-glass"></i>
                     </button>
                     <?php if (!empty($searchTag)): ?>
-                        <a href="?filter=<?= htmlspecialchars($filter); ?>" class="btn btn-outline-secondary">
+                        <a href="?filter=<?= htmlspecialchars($filter, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline-secondary">
                             <i class="fa-solid fa-xmark"></i>
                         </a>
                     <?php endif; ?>
@@ -193,7 +218,13 @@ if (isset($pdo)) {
 
         <?php if (!empty($successMessage)): ?>
             <div class="alert alert-success bg-success bg-opacity-20 border-0 text-light mb-4">
-                <i class="fa-solid fa-circle-check me-2"></i><?= htmlspecialchars($successMessage); ?>
+                <i class="fa-solid fa-circle-check me-2"></i><?= htmlspecialchars($successMessage, ENT_QUOTES, 'UTF-8'); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger bg-danger bg-opacity-20 border-0 text-light mb-4">
+                <i class="fa-solid fa-triangle-exclamation me-2"></i><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?>
             </div>
         <?php endif; ?>
 
@@ -202,7 +233,7 @@ if (isset($pdo)) {
                 <i class="fa-solid fa-radar fa-3x text-muted mb-3"></i>
                 <h4 class="font-cinzel text-light">No Active Signals Found</h4>
                 <p class="text-muted small mb-4">
-                    <?= !empty($searchTag) ? 'No broadcasts found matching standard tag <strong>#' . htmlspecialchars($searchTag) . '</strong>.' : 'Connect with other nodes or alter your view filter.'; ?>
+                    <?= !empty($searchTag) ? 'No broadcasts found matching standard tag <strong>#' . htmlspecialchars($searchTag, ENT_QUOTES, 'UTF-8') . '</strong>.' : 'Connect with other nodes or alter your view filter.'; ?>
                 </p>
                 <a href="/posts/create.php" class="btn btn-outline-info rounded-pill px-4 btn-sm fw-bold">
                     <i class="fa-solid fa-plus me-1"></i>Create First Broadcast
@@ -212,7 +243,7 @@ if (isset($pdo)) {
 
             <?php foreach ($posts as $post): ?>
                 <?php 
-                    $badge = getNodeBadge($post['reputation_points'] ?? 0);
+                    $badge = getNodeBadge((int)($post['reputation_points'] ?? 0));
                     $avatarFilename = $post['avatar'] ?? '';
                     $avatarServerPath = __DIR__ . '/uploads/profiles/' . $avatarFilename;
                     $avatarPath = (!empty($avatarFilename) && file_exists($avatarServerPath))
@@ -220,32 +251,32 @@ if (isset($pdo)) {
                         : '/assets/images/default_avatar.png';
 
                     $isAuthor = ((int)$post['author_id'] === $userId);
-                    $hasVoted = !empty($post['user_reaction']);
+                    $displayName = !empty($post['display_name']) ? $post['display_name'] : $post['username'];
                 ?>
-                <article class="vk-card p-4 mb-4 border border-secondary rounded" id="post-<?= $post['post_id']; ?>">
+                <article class="vk-card p-4 mb-4 border border-secondary rounded" id="post-<?= (int)$post['post_id']; ?>">
                     
                     <!-- Post Author Info Header -->
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div class="d-flex align-items-center gap-3">
-                            <img src="<?= htmlspecialchars($avatarPath); ?>" class="rounded-circle border border-info" width="48" height="48" style="object-fit:cover;" alt="Node Avatar">
+                            <img src="<?= htmlspecialchars($avatarPath, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle border border-info" width="48" height="48" style="object-fit:cover;" alt="Node Avatar">
                             <div>
                                 <div class="d-flex align-items-center gap-2">
                                     <h6 class="font-cinzel mb-0 text-light fw-bold">
-                                        <?= htmlspecialchars(html_entity_decode($post['display_name'] ?: $post['username'], ENT_QUOTES, 'UTF-8')); ?>
+                                        <?= htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>
                                     </h6>
                                     <span class="badge <?= $badge['class']; ?> extra-small rounded-pill">
                                         <i class="fa-solid <?= $badge['icon']; ?> me-1"></i><?= $badge['title']; ?>
                                     </span>
                                 </div>
                                 <small class="text-muted extra-small">
-                                    @<?= htmlspecialchars($post['username']); ?> • <?= date('M j, Y @ H:i', strtotime($post['post_created_at'])); ?>
+                                    @<?= htmlspecialchars($post['username'], ENT_QUOTES, 'UTF-8'); ?> • <?= date('M j, Y @ H:i', strtotime($post['post_created_at'])); ?>
                                 </small>
                             </div>
                         </div>
                         <div>
                             <span class="badge bg-dark border border-secondary text-muted extra-small">
                                 <i class="fa-solid <?= $post['visibility'] === 'public' ? 'fa-globe' : 'fa-user-group'; ?> me-1"></i>
-                                <?= strtoupper($post['visibility']); ?>
+                                <?= strtoupper(htmlspecialchars($post['visibility'], ENT_QUOTES, 'UTF-8')); ?>
                             </span>
                         </div>
                     </div>
@@ -259,12 +290,12 @@ if (isset($pdo)) {
                             <div class="mb-2">
                                 <?php foreach (explode(' ', $post['tags']) as $tag): ?>
                                     <?php 
-                                        $cleanTag = ltrim(html_entity_decode($tag, ENT_QUOTES, 'UTF-8'), '#'); 
+                                        $cleanTag = ltrim(trim($tag), '#'); 
                                         if (empty($cleanTag)) continue;
                                     ?>
                                     <a href="?filter=<?= urlencode($filter); ?>&tag=<?= urlencode($cleanTag); ?>" 
                                        class="badge bg-info bg-opacity-10 text-info text-decoration-none me-1">
-                                        #<?= htmlspecialchars($cleanTag); ?>
+                                        #<?= htmlspecialchars($cleanTag, ENT_QUOTES, 'UTF-8'); ?>
                                     </a>
                                 <?php endforeach; ?>
                             </div>
@@ -274,13 +305,13 @@ if (isset($pdo)) {
                         <?php if (!empty($post['attachment'])): ?>
                             <div class="mt-3 p-2 bg-dark rounded border border-secondary text-center">
                                 <?php if ($post['attachment_type'] === 'image'): ?>
-                                    <img src="/uploads/attachments/<?= htmlspecialchars($post['attachment']); ?>" class="img-fluid rounded" style="max-height: 400px;" alt="Payload Attachment">
+                                    <img src="/uploads/attachments/<?= htmlspecialchars($post['attachment'], ENT_QUOTES, 'UTF-8'); ?>" class="img-fluid rounded" style="max-height: 400px;" alt="Payload Attachment">
                                 <?php elseif ($post['attachment_type'] === 'video'): ?>
                                     <video controls class="w-100 rounded" style="max-height: 400px;">
-                                        <source src="/uploads/attachments/<?= htmlspecialchars($post['attachment']); ?>" type="video/mp4">
+                                        <source src="/uploads/attachments/<?= htmlspecialchars($post['attachment'], ENT_QUOTES, 'UTF-8'); ?>" type="video/mp4">
                                     </video>
                                 <?php else: ?>
-                                    <a href="/uploads/attachments/<?= htmlspecialchars($post['attachment']); ?>" class="btn btn-outline-info btn-sm rounded-pill my-2" download>
+                                    <a href="/uploads/attachments/<?= htmlspecialchars($post['attachment'], ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline-info btn-sm rounded-pill my-2" download>
                                         <i class="fa-solid fa-download me-2"></i>Download Payload Document
                                     </a>
                                 <?php endif; ?>
@@ -309,50 +340,50 @@ if (isset($pdo)) {
                             </div>
                         <?php else: ?>
                             <!-- Fully interactive reaction bar for all other logged-in users -->
-                            <div class="btn-group btn-group-sm rounded-pill border border-secondary p-1 bg-dark reaction-bar" id="reaction-bar-<?= $post['post_id']; ?>">
+                            <div class="btn-group btn-group-sm rounded-pill border border-secondary p-1 bg-dark reaction-bar" id="reaction-bar-<?= (int)$post['post_id']; ?>">
                                 <button type="button" 
                                         class="btn btn-dark text-danger border-0 rounded-pill px-2 rx-btn <?= $post['user_reaction'] === 'valhalla' ? 'active bg-danger text-white fw-bold' : ''; ?>" 
-                                        data-post-id="<?= $post['post_id']; ?>" data-type="valhalla" title="Valhalla (+4 Rep)">
-                                    <i class="fa-solid fa-shield-halved"></i> 
+                                        data-post-id="<?= (int)$post['post_id']; ?>" data-type="valhalla" title="Valhalla (+4 Rep)">
+                                    <i class="fa-solid fa-shield-halved me-1"></i> 
                                     <span class="count-valhalla"><?= (int)$post['valhalla_count']; ?></span>
                                 </button>
                                 
                                 <button type="button" 
                                         class="btn btn-dark text-success border-0 rounded-pill px-2 rx-btn <?= $post['user_reaction'] === 'honor' ? 'active bg-success text-white fw-bold' : ''; ?>" 
-                                        data-post-id="<?= $post['post_id']; ?>" data-type="honor" title="Honor (+2 Rep)">
-                                    <i class="fa-solid fa-thumbs-up"></i> 
+                                        data-post-id="<?= (int)$post['post_id']; ?>" data-type="honor" title="Honor (+2 Rep)">
+                                    <i class="fa-solid fa-thumbs-up me-1"></i> 
                                     <span class="count-honor"><?= (int)$post['honor_count']; ?></span>
                                 </button>
                                 
                                 <button type="button" 
                                         class="btn btn-dark text-warning border-0 rounded-pill px-2 rx-btn <?= $post['user_reaction'] === 'dishonor' ? 'active bg-warning text-dark fw-bold' : ''; ?>" 
-                                        data-post-id="<?= $post['post_id']; ?>" data-type="dishonor" title="Dishonor (-2 Rep)">
-                                    <i class="fa-solid fa-thumbs-down"></i> 
+                                        data-post-id="<?= (int)$post['post_id']; ?>" data-type="dishonor" title="Dishonor (-2 Rep)">
+                                    <i class="fa-solid fa-thumbs-down me-1"></i> 
                                     <span class="count-dishonor"><?= (int)$post['dishonor_count']; ?></span>
                                 </button>
                                 
                                 <button type="button" 
                                         class="btn btn-dark text-secondary border-0 rounded-pill px-2 rx-btn <?= $post['user_reaction'] === 'strike' ? 'active bg-secondary text-white fw-bold' : ''; ?>" 
-                                        data-post-id="<?= $post['post_id']; ?>" data-type="strike" title="Strike (-4 Rep)">
-                                    <i class="fa-solid fa-skull"></i> 
+                                        data-post-id="<?= (int)$post['post_id']; ?>" data-type="strike" title="Strike (-4 Rep)">
+                                    <i class="fa-solid fa-skull me-1"></i> 
                                     <span class="count-strike"><?= (int)$post['strike_count']; ?></span>
                                 </button>
                             </div>
                         <?php endif; ?>
-                    
+                        
                         <!-- Logs Toggle -->
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-comments" data-post-id="<?= $post['post_id']; ?>">
+                        <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 toggle-comments" data-post-id="<?= (int)$post['post_id']; ?>">
                             <i class="fa-solid fa-comments me-1"></i>
                             <span class="comment-count"><?= (int)$post['comment_count']; ?></span> Logs
                         </button>
                     </div>
 
                     <!-- Comments Container -->
-                    <div class="comments-container mt-3 pt-3 border-top border-secondary" style="display:none;" id="comments-<?= $post['post_id']; ?>">
-                        <div class="comments-list mb-3" id="comments-list-<?= $post['post_id']; ?>">
+                    <div class="comments-container mt-3 pt-3 border-top border-secondary" style="display:none;" id="comments-<?= (int)$post['post_id']; ?>">
+                        <div class="comments-list mb-3" id="comments-list-<?= (int)$post['post_id']; ?>">
                             <div class="text-center text-muted py-2 loading-logs"><i class="fa-solid fa-spinner fa-spin me-1"></i> Accessing logs...</div>
                         </div>
-                        <form class="comment-form d-flex gap-2" data-post-id="<?= $post['post_id']; ?>">
+                        <form class="comment-form d-flex gap-2" data-post-id="<?= (int)$post['post_id']; ?>">
                             <input type="text" class="form-control form-control-sm bg-dark text-light border-secondary comment-input" placeholder="Append comment to log..." required>
                             <button type="submit" class="btn btn-info btn-sm rounded-pill px-3 fw-bold text-dark">
                                 <i class="fa-solid fa-paper-plane"></i>
@@ -363,6 +394,25 @@ if (isset($pdo)) {
                 </article>
             <?php endforeach; ?>
 
+            <!-- Pagination Controls -->
+            <?php if ($totalPages > 1): ?>
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item <?= $page <= 1 ? 'disabled' : ''; ?>">
+                            <a class="page-link bg-dark text-info border-secondary" href="?page=<?= $page - 1; ?>&filter=<?= urlencode($filter); ?><?= !empty($searchTag) ? '&tag=' . urlencode($searchTag) : ''; ?>">Previous</a>
+                        </li>
+                        <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                            <li class="page-item <?= $i === $page ? 'active' : ''; ?>">
+                                <a class="page-link <?= $i === $page ? 'bg-info text-dark border-info' : 'bg-dark text-info border-secondary'; ?>" href="?page=<?= $i; ?>&filter=<?= urlencode($filter); ?><?= !empty($searchTag) ? '&tag=' . urlencode($searchTag) : ''; ?>"><?= $i; ?></a>
+                            </li>
+                        <?php endfor; ?>
+                        <li class="page-item <?= $page >= $totalPages ? 'disabled' : ''; ?>">
+                            <a class="page-link bg-dark text-info border-secondary" href="?page=<?= $page + 1; ?>&filter=<?= urlencode($filter); ?><?= !empty($searchTag) ? '&tag=' . urlencode($searchTag) : ''; ?>">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            <?php endif; ?>
+
         <?php endif; ?>
 
     </div>
@@ -371,131 +421,159 @@ if (isset($pdo)) {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    // Delegate click handling for non-author reaction buttons
-    document.addEventListener('click', function(e) {
-        const btn = e.target.closest('.rx-btn');
-        if (!btn) return;
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 
-        const postId = btn.dataset.postId;
-        const reactionType = btn.dataset.type;
-        const bar = document.getElementById(`reaction-bar-${postId}`);
+    // 1. REACTION EVENT LISTENERS & DISPATCH
+    document.addEventListener('click', function(e) {
+        const rxBtn = e.target.closest('.rx-btn');
+        if (rxBtn) {
+            e.preventDefault();
+            const postId = rxBtn.dataset.postId;
+            const reactionType = rxBtn.dataset.type;
+            castReaction(postId, reactionType, rxBtn);
+        }
+
+        const commentToggle = e.target.closest('.toggle-comments');
+        if (commentToggle) {
+            e.preventDefault();
+            const postId = commentToggle.dataset.postId;
+            const commentsContainer = document.getElementById(`comments-${postId}`);
+            if (commentsContainer) {
+                const isHidden = commentsContainer.style.display === 'none' || !commentsContainer.style.display;
+                commentsContainer.style.display = isHidden ? 'block' : 'none';
+                if (isHidden) {
+                    loadComments(postId);
+                }
+            }
+        }
+    });
+
+    function castReaction(postId, reactionType, clickedBtn) {
+        const formData = new FormData();
+        formData.append('action', 'toggle_reaction');
+        formData.append('post_id', postId);
+        formData.append('reaction_type', reactionType);
 
         fetch('/posts/interact.php', {
             method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `action=toggle_reaction&post_id=${postId}&reaction_type=${reactionType}`
+            body: formData
         })
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                const b = data.breakdown;
-                const userRx = data.user_reaction;
+                const bar = document.getElementById(`reaction-bar-${postId}`);
+                if (!bar) return;
 
-                // Update tallies dynamically
-                bar.querySelector('.count-valhalla').textContent = b.valhalla;
-                bar.querySelector('.count-honor').textContent = b.honor;
-                bar.querySelector('.count-dishonor').textContent = b.dishonor;
-                bar.querySelector('.count-strike').textContent = b.strike;
-
-                // Update active button highlighting
-                bar.querySelectorAll('.rx-btn').forEach(button => {
-                    const type = button.dataset.type;
-                    button.classList.remove('active', 'bg-danger', 'bg-success', 'bg-warning', 'bg-secondary', 'text-white', 'text-dark');
-                    button.classList.add('btn-dark');
-
-                    if (type === userRx) {
-                        button.classList.add('active');
-                        if (type === 'valhalla') button.classList.add('bg-danger', 'text-white');
-                        if (type === 'honor') button.classList.add('bg-success', 'text-white');
-                        if (type === 'dishonor') button.classList.add('bg-warning', 'text-dark');
-                        if (type === 'strike') button.classList.add('bg-secondary', 'text-white');
+                // Reset visual state across buttons
+                bar.querySelectorAll('.rx-btn').forEach(btn => {
+                    const type = btn.dataset.type;
+                    btn.classList.remove('active', 'fw-bold', 'bg-danger', 'bg-success', 'bg-warning', 'bg-secondary', 'text-white', 'text-dark');
+                    
+                    if (data.breakdown && data.breakdown[type] !== undefined) {
+                        const countSpan = btn.querySelector(`.count-${type}`);
+                        if (countSpan) countSpan.textContent = data.breakdown[type];
                     }
                 });
+
+                // Apply active state when selected
+                if (data.user_reaction === reactionType) {
+                    clickedBtn.classList.add('active', 'fw-bold');
+                    if (reactionType === 'valhalla') clickedBtn.classList.add('bg-danger', 'text-white');
+                    if (reactionType === 'honor') clickedBtn.classList.add('bg-success', 'text-white');
+                    if (reactionType === 'dishonor') clickedBtn.classList.add('bg-warning', 'text-dark');
+                    if (reactionType === 'strike') clickedBtn.classList.add('bg-secondary', 'text-white');
+                }
             } else {
-                alert(data.error || 'Failed to update reaction state.');
+                alert(data.error || 'Unable to log reaction');
             }
         })
-        .catch(err => console.error('Reaction request error:', err));
-    });
+        .catch(err => console.error('Reaction dispatch failed:', err));
+    }
 
-    // Toggle Comments Visibility & Fetch Logs
-    document.querySelectorAll('.toggle-comments').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const postId = this.dataset.postId;
-            const commentsDiv = document.getElementById(`comments-${postId}`);
-            const listDiv = document.getElementById(`comments-list-${postId}`);
-            
-            if (commentsDiv.style.display === 'none') {
-                commentsDiv.style.display = 'block';
-                
-                // Fetch comments if list isn't populated yet
-                fetch(`/posts/interact.php?action=get_comments&post_id=${postId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.success && Array.isArray(data.comments)) {
-                            if (data.comments.length === 0) {
-                                listDiv.innerHTML = '<p class="text-muted extra-small mb-0 text-center">No logs recorded yet.</p>';
-                            } else {
-                                listDiv.innerHTML = data.comments.map(c => `
-                                    <div class="p-2 mb-2 bg-dark rounded border border-secondary extra-small">
-                                        <strong class="text-info">@${c.username}</strong> 
-                                        <span class="text-light ms-1">${c.comment}</span>
-                                        <div class="text-muted me-1 mt-1">${c.created_at}</div>
-                                    </div>
-                                `).join('');
-                            }
-                        }
-                    })
-                    .catch(() => {
-                        listDiv.innerHTML = '<p class="text-danger extra-small mb-0 text-center">Failed to load logs.</p>';
-                    });
-            } else {
-                commentsDiv.style.display = 'none';
-            }
-        });
-    });
+    // 2. FETCH COMMENTS VIA AJAX
+    function loadComments(postId) {
+        const listDiv = document.getElementById(`comments-list-${postId}`);
+        if (!listDiv) return;
 
-    // Submit Comments via AJAX
-    document.querySelectorAll('.comment-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const postId = this.dataset.postId;
-            const input = this.querySelector('.comment-input');
-            const commentText = input.value.trim();
-            const listDiv = document.getElementById(`comments-list-${postId}`);
+        listDiv.innerHTML = '<div class="text-center text-muted p-2"><i class="fas fa-spinner fa-spin me-2"></i>Loading logs...</div>';
 
-            if(!commentText) return;
-
-            fetch('/posts/interact.php', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-                body: `action=add_comment&post_id=${postId}&comment=${encodeURIComponent(commentText)}`
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    input.value = '';
-                    const logBtn = document.querySelector(`#post-${postId} .comment-count`);
-                    if(logBtn) {
-                        logBtn.textContent = parseInt(logBtn.textContent || 0) + 1;
-                    }
-                    
-                    // Prepend/Append new comment to active comment stream
-                    const newLog = document.createElement('div');
-                    newLog.className = 'p-2 mb-2 bg-dark rounded border border-secondary extra-small';
-                    newLog.innerHTML = `<strong class="text-info">You</strong> <span class="text-light ms-1">${data.comment || commentText}</span>`;
-                    
-                    if (listDiv.querySelector('.text-center')) {
-                        listDiv.innerHTML = '';
-                    }
-                    listDiv.appendChild(newLog);
-                } else {
-                    alert(data.error || 'Could not append comment.');
+        fetch(`/posts/interact.php?action=fetch_comments&post_id=${postId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (!data.comments || data.comments.length === 0) {
+                    listDiv.innerHTML = '<div class="text-center text-muted p-2 extra-small">No logs recorded yet. Be the first to transmit.</div>';
+                    return;
                 }
-            });
-        });
-    });
 
+                listDiv.innerHTML = data.comments.map(c => {
+                    const authorHandle = c.display_name ? c.display_name : c.username;
+                    return `
+                    <div class="p-2 mb-2 bg-dark rounded border border-secondary extra-small">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong class="text-info">@${escapeHtml(authorHandle)}</strong>
+                            <span class="text-muted extra-small">${escapeHtml(c.created_at)}</span>
+                        </div>
+                        <div class="text-light">${escapeHtml(c.content)}</div>
+                    </div>
+                `}).join('');
+            } else {
+                listDiv.innerHTML = `<div class="text-danger p-2 extra-small">${escapeHtml(data.error)}</div>`;
+            }
+        })
+        .catch(err => {
+            console.error('Failed to load comments:', err);
+            listDiv.innerHTML = '<div class="text-danger p-2 extra-small">Failed to load log transmissions.</div>';
+        });
+    }
+
+    // 3. SUBMIT COMMENT
+    document.addEventListener('submit', function(e) {
+        if (!e.target.classList.contains('comment-form')) return;
+        
+        e.preventDefault();
+        const form = e.target;
+        const postId = form.dataset.postId;
+        const input = form.querySelector('.comment-input');
+        const commentText = input.value.trim();
+
+        if (!commentText) return;
+
+        const formData = new FormData();
+        formData.append('action', 'add_comment');
+        formData.append('post_id', postId);
+        formData.append('content', commentText);
+
+        fetch('/posts/interact.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                
+                const countSpan = document.querySelector(`#post-${postId} .comment-count`);
+                if (countSpan) {
+                    countSpan.textContent = parseInt(countSpan.textContent || '0', 10) + 1;
+                }
+
+                // Reload comment stream directly to ensure author details and timestamps align
+                loadComments(postId);
+            } else {
+                alert(data.error || 'Could not append comment.');
+            }
+        })
+        .catch(err => console.error('Error logging comment:', err));
+    });
 });
 </script>
 
