@@ -83,6 +83,12 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                     <a href="/nodes.php" class="btn btn-outline-warning btn-sm rounded-pill px-3">
                         <i class="fa-solid fa-users"></i> Users
                     </a>
+                    <a href="/users/messages.php" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-message"></i> Messages
+                    </a>
+                    <a href="/users/settings.php" class="btn btn-outline-success btn-sm rounded-pill px-3">
+                        <i class="fa-solid fa-user-gear"></i> Settings
+                    </a>
                     <a href="/logout.php" class="btn btn-danger btn-sm rounded-pill px-3">Logout</a>
                 <?php else: ?>
                     <a href="/login.php" class="btn btn-link text-decoration-none text-light btn-sm">Login</a>

@@ -13,10 +13,29 @@ class NotificationService {
     /**
      * Main method to trigger notifications
      */
-    public function sendNotification(int $recipientId, int $actorId, string $type, ?int $entityId, string $message, string $targetUrl = '/dashboard.php') {
+    public function sendNotification(int $recipientId, int $actorId, string $type, ?int $entityId, string $message, ?string $targetUrl = null) {
         // Do not notify self
         if ($recipientId === $actorId) {
             return false;
+        }
+
+        // Auto-generate target URL if not provided
+        if ($targetUrl === null) {
+            switch ($type) {
+                case 'post_comment':
+                case 'post_reaction':
+                    $targetUrl = "/feed.php#post-" . $entityId;
+                    break;
+                case 'new_message':
+                    $targetUrl = "/users/messages.php?conversation_id=" . $entityId;
+                    break;
+                case 'connection_request':
+                    $targetUrl = "/notifications.php";
+                    break;
+                default:
+                    $targetUrl = "/dashboard.php";
+                    break;
+            }
         }
 
         // Fetch recipient user and preferences
@@ -44,7 +63,7 @@ class NotificationService {
         if ($type === 'post_comment' && !$recipient['notify_comm']) return false;
         if ($type === 'network_post' && !$recipient['notify_post']) return false;
 
-        // 1. Insert In-App Notification (Always stored so nav badge counts work)
+        // 1. Insert In-App Notification
         $insert = $this->pdo->prepare("
             INSERT INTO notifications (user_id, actor_id, type, entity_id, message) 
             VALUES (:user_id, :actor_id, :type, :entity_id, :message)

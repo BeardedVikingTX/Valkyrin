@@ -31,7 +31,7 @@ if (isset($pdo)) {
             $profileUser = $stmt->fetch(PDO::FETCH_ASSOC);
         }
     } catch (PDOException $e) {
-        // Fallback catch
+        // Safe fallback
     }
 }
 
@@ -45,14 +45,13 @@ if (!$profileUser) {
 $profileId = (int)$profileUser['id'];
 $isSelf = ($profileId === $currentUserId);
 
-// Redirect self to dashboard
 if ($isSelf) {
     header("Location: /users/dashboard.php");
     exit();
 }
 
 // 2. Determine Connection Status
-$connectionStatus = 'none'; // none, pending_sent, pending_received, accepted
+$connectionStatus = 'none'; 
 if (isset($pdo)) {
     try {
         $connStmt = $pdo->prepare("
@@ -75,7 +74,7 @@ if (isset($pdo)) {
                 $connectionStatus = ($connRecord['requester_id'] === $currentUserId) ? 'pending_sent' : 'pending_received';
             }
         }
-    } catch (PDOException $e) { /* Safe fallback */ }
+    } catch (PDOException $e) {}
 }
 
 // 3. Compute Dynamic Reputation
@@ -168,7 +167,7 @@ $bannerPath = !empty($profileUser['banner'])
                 <small class="text-info font-monospace">@<?= htmlspecialchars($profileUser['username']); ?></small>
             </div>
             
-            <!-- Connection Control Actions -->
+            <!-- Connection Controls -->
             <div id="connectionActionArea">
                 <?php if ($connectionStatus === 'accepted'): ?>
                     <button class="btn btn-outline-danger rounded-pill px-4 fw-bold" onclick="handleNodeAction(<?= $profileId; ?>, 'sever')">
@@ -224,10 +223,10 @@ $bannerPath = !empty($profileUser['banner'])
         </div>
 
         <div class="row g-4 mb-5">
-            <!-- Left Column: Avatar & Quick Info -->
+            <!-- Left Column: Avatar & Dynamic Metadata -->
             <div class="col-lg-4">
-                <div class="vk-card p-4 text-center h-100">
-                    <div class="position-relative d-inline-block mb-3">
+                <div class="vk-card p-4 text-center h-100 d-flex flex-column">
+                    <div class="position-relative d-inline-block mb-3 align-self-center">
                         <img src="<?= htmlspecialchars($avatarPath); ?>" 
                              class="rounded-circle border border-2 border-info bg-dark p-1" 
                              width="130" height="130" 
@@ -238,16 +237,71 @@ $bannerPath = !empty($profileUser['banner'])
                     <h4 class="font-cinzel fw-bold mb-1"><?= htmlspecialchars($profileUser['display_name'] ?: $profileUser['username']); ?></h4>
                     <p class="text-muted-custom small mb-3">@<?= htmlspecialchars($profileUser['username']); ?></p>
 
+                    <!-- Role Badge (If defined) -->
+                    <?php if (!empty($profileUser['role'])): ?>
+                        <div class="mb-3">
+                            <span class="badge bg-outline-info border border-info text-info px-3 py-1">
+                                <i class="fa-solid fa-user-gear me-1"></i><?= htmlspecialchars(strtoupper($profileUser['role'])); ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- Bio Block -->
                     <div class="p-3 bg-dark rounded border border-secondary text-start mb-3">
                         <small class="text-info d-block fw-bold mb-1"><i class="fa-solid fa-id-card me-1"></i> Public Bio:</small>
                         <p class="text-muted-custom small mb-0">
                             <?= nl2br(htmlspecialchars($profileUser['bio'] ?: 'No system manifest published yet.')); ?>
                         </p>
                     </div>
+
+                    <!-- Dynamic Node Attributes -->
+                    <div class="p-3 bg-dark rounded border border-secondary text-start mt-auto">
+                        <small class="text-info d-block fw-bold mb-2"><i class="fa-solid fa-sliders me-1"></i> Node Parameters:</small>
+                        <ul class="list-unstyled text-muted-custom small mb-0 d-flex flex-column gap-2">
+                            <?php if (!empty($profileUser['location'])): ?>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-location-dot text-info width-20"></i>
+                                    <span><?= htmlspecialchars($profileUser['location']); ?></span>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if (!empty($profileUser['website'])): ?>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="fa-solid fa-globe text-info width-20"></i>
+                                    <a href="<?= htmlspecialchars($profileUser['website']); ?>" target="_blank" rel="noopener" class="text-info text-decoration-none text-truncate">
+                                        <?= htmlspecialchars(preg_replace('#^https?://#', '', $profileUser['website'])); ?>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if (!empty($profileUser['github'])): ?>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="fa-brands fa-github text-info width-20"></i>
+                                    <a href="https://github.com/<?= htmlspecialchars($profileUser['github']); ?>" target="_blank" rel="noopener" class="text-info text-decoration-none">
+                                        @<?= htmlspecialchars($profileUser['github']); ?>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if (!empty($profileUser['twitter']) || !empty($profileUser['x_handle'])): ?>
+                                <?php $xHandle = $profileUser['twitter'] ?? $profileUser['x_handle']; ?>
+                                <li class="d-flex align-items-center gap-2">
+                                    <i class="fa-brands fa-x-twitter text-info width-20"></i>
+                                    <a href="https://x.com/<?= htmlspecialchars($xHandle); ?>" target="_blank" rel="noopener" class="text-info text-decoration-none">
+                                        @<?= htmlspecialchars($xHandle); ?>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if (empty($profileUser['location']) && empty($profileUser['website']) && empty($profileUser['github']) && empty($profileUser['twitter']) && empty($profileUser['x_handle'])): ?>
+                                <li class="text-muted fst-italic">No extended parameters configured.</li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
                 </div>
             </div>
 
-            <!-- Right Column: Clearance / Badge Display Case -->
+            <!-- Right Column: Badge Display Case -->
             <div class="col-lg-8">
                 <div class="vk-card p-4 p-md-5 h-100">
                     <h3 class="font-cinzel text-accent mb-4">

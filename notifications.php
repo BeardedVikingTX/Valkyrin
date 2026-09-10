@@ -17,11 +17,11 @@ $userId = (int)$_SESSION['user_id'];
 $notifications = [];
 
 if (isset($pdo)) {
-    // Mark notifications as read
+    // Mark notifications as read upon landing on the page
     $markRead = $pdo->prepare("UPDATE notifications SET is_read = 1 WHERE user_id = ?");
     $markRead->execute([$userId]);
 
-    // Fetch notifications joined with actor data
+    // Fetch notifications joined with actor details
     $stmt = $pdo->prepare("
         SELECT n.*, u.username, u.display_name, u.avatar 
         FROM notifications n 
@@ -62,35 +62,54 @@ if (isset($pdo)) {
                     <?php foreach ($notifications as $notif): ?>
                         <?php 
                             $actorName = !empty($notif['display_name']) ? $notif['display_name'] : $notif['username'];
-                                
-                                // Determine avatar path accurately
-                                if (!empty($notif['avatar'])) {
-                                    // If avatar string already contains path, use it; otherwise prepend directory
-                                    $avatarUrl = (strpos($notif['avatar'], '/') === 0 || strpos($notif['avatar'], 'uploads/') === 0) 
-                                        ? $notif['avatar'] 
-                                        : '/uploads/profiles/' . $notif['avatar'];
-                                } else {
-                                    $avatarUrl = '/uploads/profiles/default_avatar.png';
-                                }
+                            
+                            // Avatar Fallback Logic
+                            if (!empty($notif['avatar'])) {
+                                $avatarUrl = (strpos($notif['avatar'], '/') === 0 || strpos($notif['avatar'], 'uploads/') === 0) 
+                                    ? $notif['avatar'] 
+                                    : '/uploads/profiles/' . $notif['avatar'];
+                            } else {
+                                $avatarUrl = '/uploads/profiles/default_avatar.png';
+                            }
+
+                            $entityId = (int)($notif['entity_id'] ?? 0);
+                            $type = strtolower($notif['type']);
+
+                            // Type-specific Visual Badges
+                            $typeBadge = '<span class="badge bg-secondary text-dark"><i class="fa-solid fa-bell me-1"></i>Signal</span>';
+                            if (in_array($type, ['post_comment', 'comment_added'])) {
+                                $typeBadge = '<span class="badge bg-warning text-dark"><i class="fa-solid fa-comment me-1"></i>Comment</span>';
+                            } elseif (in_array($type, ['post_reaction', 'like'])) {
+                                $typeBadge = '<span class="badge bg-danger text-white"><i class="fa-solid fa-heart me-1"></i>Reaction</span>';
+                            } elseif (in_array($type, ['new_message', 'message', 'direct_message', 'group_message', 'dm'])) {
+                                $typeBadge = '<span class="badge bg-info text-dark"><i class="fa-solid fa-paper-plane me-1"></i>Transmission</span>';
+                            } elseif ($type === 'connection_request') {
+                                $typeBadge = '<span class="badge bg-primary text-white"><i class="fa-solid fa-user-plus me-1"></i>Node Link</span>';
+                            }
                         ?>
-                        <div class="p-3 bg-dark border border-secondary rounded d-flex align-items-center justify-content-between gap-3">
+                        <div class="p-3 bg-dark border border-secondary rounded d-flex align-items-center justify-content-between gap-3 vk-notif-item">
                             <div class="d-flex align-items-center gap-3">
-                                <img src="<?= htmlspecialchars($avatarUrl); ?>" 
-                                     alt="Avatar" 
-                                     class="rounded-circle border border-info" 
-                                     style="width: 45px; height: 45px; object-fit: cover;"
-                                     onerror="this.onerror=null; this.src='/uploads/profiles/default_avatar.png';">
+                                <a href="/user.php?id=<?= $notif['actor_id']; ?>" title="View Profile">
+                                    <img src="<?= htmlspecialchars($avatarUrl); ?>" 
+                                         alt="Avatar" 
+                                         class="rounded-circle border border-info" 
+                                         style="width: 48px; height: 48px; object-fit: cover;"
+                                         onerror="this.onerror=null; this.src='/uploads/profiles/default_avatar.png';">
+                                </a>
                                 <div>
-                                    <div class="text-light fw-bold mb-1"><?= htmlspecialchars($notif['message']); ?></div>
+                                    <div class="mb-1">
+                                        <?= $typeBadge; ?>
+                                        <span class="text-light ms-1 fw-semibold"><?= htmlspecialchars($notif['message']); ?></span>
+                                    </div>
                                     <small class="text-muted font-monospace">
                                         <i class="fa-regular fa-clock me-1"></i><?= date('M j, Y - H:i', strtotime($notif['created_at'])); ?>
                                     </small>
                                 </div>
                             </div>
 
-                            <!-- Actionable Controls by Notification Type -->
-                            <div class="d-flex align-items-center gap-2">
-                                <?php if ($notif['type'] === 'connection_request'): ?>
+                            <!-- Contextual Action Routing -->
+                            <div class="d-flex align-items-center gap-2 notif-action-wrapper">
+                                <?php if ($type === 'connection_request'): ?>
                                     <button class="btn btn-sm btn-success notif-action-btn" data-actor-id="<?= $notif['actor_id']; ?>" data-action="accept">
                                         <i class="fa-solid fa-check me-1"></i>Accept
                                     </button>
@@ -98,19 +117,24 @@ if (isset($pdo)) {
                                         <i class="fa-solid fa-xmark me-1"></i>Reject
                                     </button>
 
-                                <?php elseif ($notif['type'] === 'article_published'): ?>
-                                    <a href="/article.php?id=<?= (int)($notif['target_id'] ?? 0); ?>" class="btn btn-sm btn-outline-info">
+                                <?php elseif (in_array($type, ['post_comment', 'comment_added', 'post_reaction', 'like', 'network_post'])): ?>
+                                    <a href="/feed.php#post-<?= $entityId; ?>" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                        <i class="fa-solid fa-arrow-right-to-bracket me-1"></i>View Signal
+                                    </a>
+
+                                <?php elseif (in_array($type, ['new_message', 'message', 'direct_message', 'group_message', 'dm'])): ?>
+                                    <a href="/users/messages.php?conversation_id=<?= $entityId; ?>" class="btn btn-sm btn-outline-info rounded-pill px-3">
+                                        <i class="fa-solid fa-comments me-1"></i>Open Transmission
+                                    </a>
+
+                                <?php elseif ($type === 'article_published'): ?>
+                                    <a href="/article.php?id=<?= $entityId; ?>" class="btn btn-sm btn-outline-info rounded-pill px-3">
                                         <i class="fa-solid fa-newspaper me-1"></i>Read Article
                                     </a>
 
-                                <?php elseif ($notif['type'] === 'comment_added'): ?>
-                                    <a href="/article.php?id=<?= (int)($notif['target_id'] ?? 0); ?>#comments" class="btn btn-sm btn-outline-warning">
-                                        <i class="fa-solid fa-comments me-1"></i>View Comment
-                                    </a>
-
                                 <?php else: ?>
-                                    <a href="/nodes.php" class="btn btn-sm btn-outline-secondary">
-                                        <i class="fa-solid fa-eye me-1"></i>View Node
+                                    <a href="/user.php?id=<?= $notif['actor_id']; ?>" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                        <i class="fa-solid fa-user me-1"></i>View Profile
                                     </a>
                                 <?php endif; ?>
                             </div>
@@ -127,8 +151,12 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.notif-action-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const targetId = this.dataset.actorId;
-            const action = this.dataset.action;
-            const card = this.closest('.p-3');
+            const action = this.dataset.action; // 'accept' or 'sever'
+            const actionWrapper = this.closest('.notif-action-wrapper');
+            const card = this.closest('.vk-notif-item');
+
+            // Disable buttons during request
+            actionWrapper.querySelectorAll('button').forEach(b => b.disabled = true);
 
             fetch('/connections_action.php', {
                 method: 'POST',
@@ -138,13 +166,28 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    card.classList.add('opacity-50');
-                    this.parentElement.innerHTML = `<span class="badge bg-info text-dark"><i class="fa-solid fa-check me-1"></i>Processed</span>`;
+                    card.classList.add('opacity-75');
+                    
+                    if (action === 'accept') {
+                        actionWrapper.innerHTML = `
+                            <span class="badge bg-success text-dark px-3 py-2 rounded-pill font-monospace">
+                                <i class="fa-solid fa-link me-1"></i>Accepted
+                            </span>`;
+                    } else {
+                        actionWrapper.innerHTML = `
+                            <span class="badge bg-danger text-white px-3 py-2 rounded-pill font-monospace">
+                                <i class="fa-solid fa-user-xmark me-1"></i>Rejected
+                            </span>`;
+                    }
                 } else {
                     alert(data.error || 'Action failed.');
+                    actionWrapper.querySelectorAll('button').forEach(b => b.disabled = false);
                 }
             })
-            .catch(err => alert('Server error: ' + err.message));
+            .catch(err => {
+                alert('Server error: ' + err.message);
+                actionWrapper.querySelectorAll('button').forEach(b => b.disabled = false);
+            });
         });
     });
 });

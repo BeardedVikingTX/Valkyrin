@@ -1,0 +1,172 @@
+[10-Sep-2026 17:18:39 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:18:39 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:20:03 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:20:03 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:20:09 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:20:09 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:19 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:19 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:24 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:24 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:39 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:27:39 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:29:12 UTC] VALKYRIN AI Error: GEMINI_API_KEY is not defined in config.php
+[10-Sep-2026 17:29:12 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:29:12 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:30:27 UTC] VALKYRIN AI API Error HTTP 404: {
+  "error": {
+    "code": 404,
+    "message": "This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:30:27 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:30:27 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:31:28 UTC] VALKYRIN AI API Error HTTP 404: {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:31:28 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:31:28 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:33:09 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:33:09 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:33:09 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:34:59 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:34:59 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:34:59 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:36:40 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:36:40 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:36:40 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:37:00 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:37:00 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:37:00 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:37:31 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:37:31 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:37:31 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/api/../includes/db.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php:3
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/api/ai_reply_handler.php on line 3
+[10-Sep-2026 17:38:57 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:39:59 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:42:54 UTC] VALKYRIN AI API Response (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ModelService.ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:43:53 UTC] VALKYRIN GeminiEngine API Error (HTTP 404): {
+  "error": {
+    "code": 404,
+    "message": "This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.",
+    "status": "NOT_FOUND"
+  }
+}
+
+[10-Sep-2026 17:43:53 UTC] VALKYRIN AI Engine Error: Gemini API Error: This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.6-flash for the latest features and improvements. We recommend you to use the Interactions API.
+[10-Sep-2026 17:49:05 UTC] VALKYRIN AI Engine Error: cURL Error: Operation timed out after 30001 milliseconds with 0 bytes received
+[10-Sep-2026 17:50:13 UTC] VALKYRIN GeminiEngine API Error (HTTP 503): {
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+[10-Sep-2026 17:50:13 UTC] VALKYRIN AI Engine Error: Gemini API Error: This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+[10-Sep-2026 17:52:45 UTC] VALKYRIN AI Engine Error: cURL Error: Operation timed out after 30002 milliseconds with 0 bytes received
+[10-Sep-2026 17:53:23 UTC] VALKYRIN AI Engine Error: cURL Error: Operation timed out after 30002 milliseconds with 0 bytes received

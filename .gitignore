@@ -1,0 +1,25 @@
+# Environment & Secret Configuration
+.env
+.env.*
+!.env.example
+
+# Storage & Upload Directories
+/storage/avatars/*
+/storage/banners/*
+/uploads/*
+!storage/avatars/.gitkeep
+!storage/banners/.gitkeep
+
+# Composer Dependencies (if using vendor packages)
+/vendor/
+
+# System & OS Files
+.DS_Store
+Thumbs.db
+*.log
+
+# Editor & IDE Configs
+.vscode/
+.idea/
+*.swp
+*.swo

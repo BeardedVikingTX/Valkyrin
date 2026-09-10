@@ -1,6 +1,9 @@
 <?php
 define('VALKYRIN_EXEC', true);
 
+// 1. Core System Dependencies (Must load database FIRST to initialize $pdo)
+require_once __DIR__ . '/includes/database.php';
+
 $pageTitle = "VALKYRIN | Initialize Node Account";
 $pageDesc = "Join the Near-ZK social infrastructure. Sovereign identity creation with zero data harvesting.";
 
@@ -10,7 +13,7 @@ require_once __DIR__ . '/includes/nav.php';
 $errors = [];
 $successMessage = '';
 
-// Handle Account Creation Strategy
+// 2. Handle Account Creation Strategy
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'initialize_account') {
     $username    = trim(filter_input(INPUT_POST, 'username', FILTER_SANITIZE_SPECIAL_CHARS));
     $email       = filter_input(INPUT_POST, 'email', FILTER_VALIDATE_EMAIL);
@@ -58,28 +61,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'threads'     => 2
                 ]);
 
-                // Fallback to BCRYPT if Argon2id module is disabled on LiteSpeed
+                // Fallback to BCRYPT if Argon2id module is disabled on server
                 if (!$passwordHash) {
                     $passwordHash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
                 }
 
+                // Start Database Transaction for Atomic Registration & AI Seeding
+                $pdo->beginTransaction();
+                
+                // A. Register New Node Operator
                 $insertStmt = $pdo->prepare("
                     INSERT INTO users (username, email, password_hash, display_name, bio) 
                     VALUES (:username, :email, :password_hash, :display_name, :bio)
                 ");
-
+                
                 $insertStmt->execute([
-                    ':username'      => $username,
-                    ':email'         => $email,
-                    ':password_hash' => $passwordHash,
-                    ':display_name'  => !empty($displayName) ? $displayName : $username,
-                    ':bio'           => !empty($bio) ? $bio : null
+                    ':username'     => $username,
+                    ':email'        => $email,
+                    ':password_hash'=> $passwordHash,
+                    ':display_name' => !empty($displayName) ? $displayName : $username,
+                    ':bio'          => !empty($bio) ? $bio : null
                 ]);
+                
+                $newUserId = (int)$pdo->lastInsertId();
+                $botUserId = 9999;
+                
+                // B. Provision System Bot Node if missing
+                $botCheck = $pdo->prepare("SELECT id FROM users WHERE id = ? LIMIT 1");
+                $botCheck->execute([$botUserId]);
+                
+                if (!$botCheck->fetch()) {
+                    $createBot = $pdo->prepare("
+                        INSERT INTO users (id, username, email, password_hash, display_name, bio) 
+                        VALUES (?, 'VALKYRIN_AI', 'system@valkyrin.local', 'SYSTEM_ACCOUNT_LOCKED', 'VALKYRIN Neural System', 'Core System Autonomous Intelligence')
+                    ");
+                    $createBot->execute([$botUserId]);
+                }
+                
+                // C. Initialize Direct Messaging Channel
+                $convStmt = $pdo->prepare("
+                    INSERT INTO conversations (type, title, creator_id, created_at) 
+                    VALUES ('direct', 'VALKYRIN AI Transmission', :creator_id, NOW())
+                ");
+                $convStmt->execute([':creator_id' => $botUserId]); // Or $newUserId
+                $newConvId = (int)$pdo->lastInsertId();
+                
+                // D. Attach New Node User & VALKYRIN_AI Bot as Participants
+                $partStmt = $pdo->prepare("INSERT INTO conversation_participants (conversation_id, user_id, joined_at) VALUES (?, ?, NOW())");
+                $partStmt->execute([$newConvId, $newUserId]);
+                $partStmt->execute([$newConvId, $botUserId]);
+                
+                // E. Dispatch System Telemetry Welcome Transmission
+                $welcomeMsg = "Greetings, Node Operator. I am the VALKYRIN Neural System. Your sovereign identity has been initialized. How may I assist your network operations today?";
+                $msgStmt = $pdo->prepare("INSERT INTO messages (conversation_id, sender_id, body, created_at) VALUES (?, ?, ?, NOW())");
+                $msgStmt->execute([$newConvId, $botUserId, $welcomeMsg]);
+                
+                // Commit all changes atomically
+                $pdo->commit();
 
-                $successMessage = "Node initialized successfully! You may now authenticate your terminal.";
+                $successMessage = "Node initialized successfully! Communication channel with VALKYRIN AI established.";
             }
         } catch (PDOException $e) {
-            $errors[] = "System execution fault: Unable to log new user record.";
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Registration Execution Fault: " . $e->getMessage());
+            $errors[] = "System execution fault: Unable to initialize node record and neural channel.";
         }
     }
 }

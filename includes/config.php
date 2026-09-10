@@ -4,6 +4,11 @@ if (!defined('VALKYRIN_EXEC')) {
     define('VALKYRIN_EXEC', true);
 }
 
+// Ensure Session Is Started Globally
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Security Headers (Hardened Baseline)
 header("X-Frame-Options: DENY");
 header("X-Content-Type-Options: nosniff");
