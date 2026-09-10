@@ -241,3 +241,38 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 42
+[10-Sep-2026 13:27:19 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:19 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:21 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:21 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:21 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:21 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:22 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:22 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:25 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:25 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:33 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:33 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:34 UTC] PHP Warning:  require_once(/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php): Failed to open stream: No such file or directory in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
+[10-Sep-2026 13:27:34 UTC] PHP Fatal error:  Uncaught Error: Failed opening required '/home/beardedviking/valkyrin.beardedviking.org/posts/includes/database.php' (include_path='.:/opt/alt/php85/usr/share/pear:/opt/alt/php85/usr/share/php:/usr/share/pear:/usr/share/php') in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php:13
+Stack trace:
+#0 {main}
+  thrown in /home/beardedviking/valkyrin.beardedviking.org/posts/interact.php on line 13
